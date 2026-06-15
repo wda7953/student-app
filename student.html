@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>學員資料</title>
+  <link rel="stylesheet" href="css/style.css">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#4A90D9">
+</head>
+<body>
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">‹ 返回</button>
+    <span id="student-name">學員資料</span>
+    <span></span>
+  </div>
+  <div class="section">基本資料</div>
+  <div class="card" id="info-card"><div class="empty">載入中…</div></div>
+  <div class="section">
+    上課記錄
+    <button onclick="goAddClass()" style="float:right;background:none;border:none;color:#4A90D9;font-size:14px;cursor:pointer;font-weight:600">＋ 新增</button>
+  </div>
+  <div class="card" id="classes-card"><div class="empty">載入中…</div></div>
+  <div class="section">
+    收款紀錄
+    <button onclick="goAddPayment()" style="float:right;background:none;border:none;color:#4A90D9;font-size:14px;cursor:pointer;font-weight:600">＋ 新增</button>
+  </div>
+  <div class="card" id="payments-card"><div class="empty">載入中…</div></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/student-detail.js"></script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>學員管理</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#4A90D9">
+</head>
+<body>
+  <div class="header">
+    <span>學員</span>
+    <button class="back-btn" onclick="location.href='add-student.html'" style="font-size:24px">＋</button>
+  </div>
+  <div class="search-bar">
+    <input type="search" id="search" placeholder="搜尋學員姓名" oninput="filterStudents(this.value)">
+  </div>
+  <div class="section">在線</div>
+  <ul class="student-list" id="active-list"><li class="student-item" style="color:#8e8e93">載入中…</li></ul>
+  <div class="section">結案</div>
+  <ul class="student-list" id="inactive-list"></ul>
+
+  <script src="js/api.js"></script>
+  <script src="js/students.js"></script>
+</body>
+</html>

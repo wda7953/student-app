@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>新增收款記錄</title>
+  <link rel="stylesheet" href="css/style.css">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#4A90D9">
+</head>
+<body>
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">‹ 返回</button>
+    <span>新增收款記錄</span>
+    <span></span>
+  </div>
+  <form onsubmit="submitForm(event)" style="padding-top:16px">
+    <div class="form-group">
+      <label>場地</label>
+      <select id="venue">
+        <option value="武士">武士</option>
+        <option value="柔力">柔力</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>方案名稱</label>
+      <input id="package_name" type="text" placeholder="活動A / 一般課 / 體驗課…">
+    </div>
+    <div class="form-group">
+      <label>收款日期</label>
+      <input id="date" type="date" required>
+    </div>
+    <div class="form-group">
+      <label>購買堂數</label>
+      <input id="sessions" type="number" placeholder="6" min="1" required>
+    </div>
+    <div class="form-group">
+      <label>總費用</label>
+      <input id="total" type="number" placeholder="8000" min="0">
+    </div>
+    <div class="form-group">
+      <label>已付金額</label>
+      <input id="paid" type="number" placeholder="8000" min="0">
+    </div>
+    <div class="form-group">
+      <label>備註</label>
+      <input id="notes" type="text" placeholder="補充說明">
+    </div>
+    <button type="submit" class="btn-primary">儲存</button>
+  </form>
+
+  <script src="js/api.js"></script>
+  <script>
+    const studentId = new URLSearchParams(location.search).get('id');
+    document.getElementById('date').value = new Date().toISOString().split('T')[0];
+
+    async function submitForm(e) {
+      e.preventDefault();
+      const btn = document.querySelector('.btn-primary');
+      btn.textContent = '儲存中…';
+      btn.disabled = true;
+      await API.apiPost('addPayment', {
+        student_id: studentId,
+        venue: document.getElementById('venue').value,
+        package_name: document.getElementById('package_name').value,
+        date: document.getElementById('date').value,
+        period_sessions: Number(document.getElementById('sessions').value),
+        total_amount: Number(document.getElementById('total').value) || 0,
+        paid_amount: Number(document.getElementById('paid').value) || 0,
+        notes: document.getElementById('notes').value
+      });
+      history.back();
+    }
+  </script>
+</body>
+</html>
