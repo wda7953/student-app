@@ -3,50 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>智慧文字模板 Demo</title>
+  <title>Demo</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, sans-serif; background: #f2f2f7; color: #1c1c1e; }
     .header { background: #4A90D9; color: white; padding: 16px 20px; font-size: 20px; font-weight: 600; }
-    .note { background: #fff9c4; padding: 12px 16px; font-size: 14px; color: #555; border-bottom: 1px solid #e5e5ea; }
-    .section { padding: 14px 16px 6px; font-size: 13px; color: #8e8e93; letter-spacing: 0.3px; }
-    .form-group { background: white; border-radius: 12px; margin: 0 16px 12px; overflow: hidden; }
-    .form-group input { width: 100%; padding: 14px 16px; border: none; font-size: 16px; background: transparent; outline: none; }
-    .seg { display: flex; margin: 0 16px 12px; border-radius: 12px; overflow: hidden; border: 1px solid #4A90D9; }
-    .seg button { flex: 1; padding: 12px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; background: white; color: #4A90D9; }
-    .seg button.on { background: #4A90D9; color: white; }
-    .level-row { display: none; margin: 0 16px 12px; }
-    .level-row.show { display: flex; border-radius: 12px; overflow: hidden; border: 1px solid #e5e5ea; }
-    .level-row button { flex: 1; padding: 10px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; background: white; color: #8e8e93; }
-    .level-row button.on { background: #e8f0fb; color: #4A90D9; }
-    .content-box { background: white; border-radius: 12px; margin: 0 16px 12px; }
-    .content-box textarea { width: 100%; padding: 14px 16px; border: none; font-size: 14px; font-family: monospace; line-height: 1.8; background: transparent; outline: none; resize: none; min-height: 400px; color: #1c1c1e; }
-    .hint { padding: 6px 16px 12px; font-size: 12px; color: #aaa; }
-    .btn { width: calc(100% - 32px); margin: 0 16px 32px; padding: 16px; background: #4A90D9; color: white; border: none; border-radius: 12px; font-size: 17px; font-weight: 600; cursor: pointer; }
+    .note { background: #fffbe6; padding: 12px 16px; font-size: 14px; color: #555; }
+    .sec { padding: 14px 16px 6px; font-size: 13px; color: #8e8e93; }
+    .card { background: white; border-radius: 12px; margin: 0 16px 12px; overflow: hidden; }
+    .card select, .card input { width: 100%; padding: 14px 16px; border: none; font-size: 16px; background: transparent; outline: none; appearance: auto; }
+    #level-wrap { display: none; }
+    .card textarea { width: 100%; padding: 14px 16px; border: none; font-size: 14px; font-family: monospace; line-height: 1.8; background: transparent; outline: none; resize: none; min-height: 420px; color: #1c1c1e; }
+    .hint { padding: 4px 16px 12px; font-size: 12px; color: #aaa; }
+    .btn { width: calc(100% - 32px); margin: 0 16px 32px; padding: 16px; background: #4A90D9; color: white; border: none; border-radius: 12px; font-size: 17px; font-weight: 600; }
   </style>
 </head>
 <body>
-  <div class="header">新增上課記錄（Demo）</div>
+  <div class="header">新增上課記錄 Demo</div>
   <div class="note">選課程類型後，內容欄自動填入對應範本，直接修改數值即可。</div>
 
-  <div class="section">日期</div>
-  <div class="form-group">
-    <input type="date" id="date">
+  <div class="sec">日期</div>
+  <div class="card"><input type="date" id="date"></div>
+
+  <div class="sec">課程類型</div>
+  <div class="card"><select id="type" onchange="onTypeChange()">
+    <option value="strength">重訓</option>
+    <option value="pilates">Pilates</option>
+  </select></div>
+
+  <div id="level-wrap">
+    <div class="sec">等級</div>
+    <div class="card"><select id="level" onchange="fillTemplate()">
+      <option value="basic">初級</option>
+      <option value="inter">中級</option>
+    </select></div>
   </div>
 
-  <div class="section">課程類型</div>
-  <div class="seg" id="type-seg">
-    <button class="on" onclick="setType('重訓')">重訓</button>
-    <button onclick="setType('Pilates')">Pilates</button>
-  </div>
-
-  <div class="level-row" id="level-row">
-    <button class="on" onclick="setLevel('初級')">初級</button>
-    <button onclick="setLevel('中級')">中級</button>
-  </div>
-
-  <div class="section">課程內容</div>
-  <div class="content-box">
+  <div class="sec">課程內容</div>
+  <div class="card">
     <textarea id="content"></textarea>
     <div class="hint">不需要的行直接刪掉；數值填在冒號後面</div>
   </div>
@@ -54,115 +48,125 @@
   <button class="btn">儲存</button>
 
   <script>
-    var type = '重訓', level = '初級';
+var TMPL = {};
 
-    var T = {
-      重訓: "【soft tissue】\n\n【mobility】\n\n【warm up】\n\n【Activate】\n\n【爆發】\n動作：\t\t\tF：\tS：\t次：\n\n【下肢推】\n動作：\t\t\tF：\tS：\t次：\n\n【下肢拉】\n動作：\t\t\tF：\tS：\t次：\n\n【上肢推】\n動作：\t\t\tF：\tS：\t次：\n\n【上肢拉】\n動作：\t\t\tF：\tS：\t次：\n\n【核心】\n動作：\t\t\tF：\tS：\t次：\n\n【體能】\n",
-      Pilates_初級: "【初級】\nF\tS\t次\t動作\n" +
-        "F1\t3-4\t10-12\tFootwork 腿部練習\n" +
-        "F1\t3-4\t10-12\tSecond Position 第二種姿勢\n" +
-        "F1\t2-3\t5-10\tSingle Leg 單腿練習\n" +
-        "F1\t2-3\t10*10\tHundred\n" +
-        "F1\t2\t10\tBent & Stretch 屈伸練習\n" +
-        "F1\t2\t5\tLift & Lower 抬腿與放腿\n" +
-        "F1\t2\t2*5\tAdductor Stretch 伸展內收肌\n" +
-        "F1\t2\t5\tShort Spine 脊椎捲曲\n" +
-        "F1\t1-2\t5\tMisback Series 中背部系列\n" +
-        "F1\t1-2\t5-10\tBack Rowing Preps 後划準備\n" +
-        "F1\t0.5-1\t5-10\tSide Arm Preps Sitting 側坐手臂準備\n" +
-        "F1\t0.5-1\t5\tSide Twist Sitting 側轉坐姿\n" +
-        "F1\t1-2\t5\tFront Rowing Preps 前划準備\n" +
-        "F1/2\t2-3\t10\tStomach Massage 腹部按摩\n" +
-        "F4\t0.5-1\t5\tArm Pulling Straps Long Box\n" +
-        "F4\t2\t5\tRound Back Short Box 弓背\n" +
-        "F4\t2\t5\tStraight Back Short Box 直背\n" +
-        "F4\t2\t5\tTwist Short Box 扭轉\n" +
-        "F4\t2\t3\tTree Short Box 樹姿\n" +
-        "F1\t1-2\t10\tElephant 大象姿\n" +
-        "F1\t1\t3-5\tMermaid 美人魚姿\n" +
-        "F1\t2\t10\tLeg Circles 雙腳畫弧\n" +
-        "F1\t2\t10\tKnee Stretches 膝部伸展\n" +
-        "F1\t2-3\t20-60\tRunning 跑步姿\n" +
-        "F1\t2-3\t10\tHip Lift 髖部上抬\n" +
-        "F1\t2-3\t5-10\tHip Rolls 髖部起伏\n" +
-        "F1/2\t2\t5\tSingle Thigh Stretch 單側大腿伸展\n" +
-        "F4\t1-2\t8-10\tSide Splits 側劈叉\n" +
-        "\n備註：",
-      Pilates_中級: "【中級】\nF\tS\t次\t動作\n" +
-        "F1\t3-4\t10-12\tFootwork 腿部練習\n" +
-        "F1\t3-4\t10-12\tSecond Position 第二種姿勢\n" +
-        "F1\t2-3\t5-10\tSingle Leg 單腿練習\n" +
-        "F1/4\t2-3\t10*10\tHundred\n" +
-        "F1/4\t2\t10\tBent & Stretch 屈伸練習\n" +
-        "F1\t2\t5\tShort Spine 脊椎捲曲\n" +
-        "F4\t2\t10\tBeats 拍擊\n" +
-        "F4\t2\t5\tFrog 蛙跳姿\n" +
-        "F4\t2\t5\tStag 鹿跳姿\n" +
-        "F4\t2\t5\tCoordination 協調性\n" +
-        "F1\t1-2\t5\tBack Rowing 後划\n" +
-        "F1/4\t1-2\t5\tFront Rowing 前划\n" +
-        "F1/2\t2-3\t10\tStomach Massage 腹部按摩\n" +
-        "F4\t1\t5\tArm Pulling Straps Long Box\n" +
-        "F4\t2\t10\tBackstroke Prep Long Box 仰泳練習準備\n" +
-        "F4\t1\t10\tFeet Pulling Straps 腳拉動拉環\n" +
-        "F4\t2\t5\tRound Back Short Box 弓背\n" +
-        "F4\t2\t5\tStraight Back Short Box 直背\n" +
-        "F4\t2\t3\tTwist With Round Back Short Box 扭轉\n" +
-        "F4\t2\t3\tLean Short Box\n" +
-        "F4\t2\t3\tTree Short Box 樹姿\n" +
-        "F1\t1\t3-5\tMermaid Short Box 美人魚姿\n" +
-        "F1\t1-2\t5\tLong Stretch\n" +
-        "F1\t1-2\t3*2set\tDown Stretch\n" +
-        "F1\t1-2\t5\tUp Stretch\n" +
-        "F1\t1-2\t10\tElephant 大象姿\n" +
-        "F3\t2\t3\tSemicircle\n" +
-        "F3/4\t1-2\t6\tChest Expansion\n" +
-        "F3/4\t0.25-2\t5\tSide Arm Preps Kneeling 跪姿手臂準備\n" +
-        "F3/4\t1-2\t5\tSide Twist Kneeling 側轉跪姿\n" +
-        "F3/4\t1-2\t4\tReverse Expansion\n" +
-        "F1\t1\t3-5\tMermaid 美人魚姿\n" +
-        "F1\t2\t10\tLeg Circles 雙腳畫弧\n" +
-        "F4\t2-3\t3\tLong Spine 脊椎\n" +
-        "F1\t2\t10\tKnee Stretches 膝部伸展\n" +
-        "F1\t2-3\t20-60\tRunning 跑步姿\n" +
-        "F1\t2-3\t10\tHip Lift 髖部上抬\n" +
-        "F1\t2-3\t5-10\tHip Rolls 髖部起伏\n" +
-        "F1/2\t2\t5\tSingle Thigh Stretch 單側大腿伸展\n" +
-        "F1\t1-2\t5\tFront Splits 前劈叉\n" +
-        "F1\t1-2\t5\tBack Splits 後劈叉\n" +
-        "F4\t1-2\t8-10\tSide Splits 側劈叉\n" +
-        "F1\t1-2\t5\tStar Prep\n" +
-        "\n備註："
-    };
+TMPL.strength =
+"\u300a soft tissue \u300b\n\n" +
+"\u300a mobility \u300b\n\n" +
+"\u300a warm up \u300b\n\n" +
+"\u300a Activate \u300b\n\n" +
+"\u300a \u7206\u767c \u300b\n" +
+"\u52d5\u4f5c\uff1a\t\t\t\u91cd\u91cf\uff1a\t\u7d44\uff1a\t\u6b21\uff1a\n\n" +
+"\u300a \u4e0b\u80a2\u63a8 \u300b\n" +
+"\u52d5\u4f5c\uff1a\t\t\t\u91cd\u91cf\uff1a\t\u7d44\uff1a\t\u6b21\uff1a\n\n" +
+"\u300a \u4e0b\u80a2\u62c9 \u300b\n" +
+"\u52d5\u4f5c\uff1a\t\t\t\u91cd\u91cf\uff1a\t\u7d44\uff1a\t\u6b21\uff1a\n\n" +
+"\u300a \u4e0a\u80a2\u63a8 \u300b\n" +
+"\u52d5\u4f5c\uff1a\t\t\t\u91cd\u91cf\uff1a\t\u7d44\uff1a\t\u6b21\uff1a\n\n" +
+"\u300a \u4e0a\u80a2\u62c9 \u300b\n" +
+"\u52d5\u4f5c\uff1a\t\t\t\u91cd\u91cf\uff1a\t\u7d44\uff1a\t\u6b21\uff1a\n\n" +
+"\u300a \u6838\u5fc3 \u300b\n" +
+"\u52d5\u4f5c\uff1a\t\t\t\u91cd\u91cf\uff1a\t\u7d44\uff1a\t\u6b21\uff1a\n\n" +
+"\u300a \u9ad4\u80fd \u300b\n";
 
-    function setType(t) {
-      type = t;
-      document.querySelectorAll('#type-seg button').forEach(function(b) {
-        b.className = b.textContent === t ? 'on' : '';
-      });
-      var lr = document.getElementById('level-row');
-      if (t === 'Pilates') { lr.className = 'level-row show'; } else { lr.className = 'level-row'; }
-      updateContent();
-    }
+TMPL.basic =
+"\u300a \u521d\u7d1a \u300b\n" +
+"F\tS\t\u6b21\t\u52d5\u4f5c\n" +
+"F1\t3-4\t10-12\tFootwork\n" +
+"F1\t3-4\t10-12\tSecond Position\n" +
+"F1\t2-3\t5-10\tSingle Leg\n" +
+"F1\t2-3\t10*10\tHundred\n" +
+"F1\t2\t10\tBent & Stretch\n" +
+"F1\t2\t5\tLift & Lower\n" +
+"F1\t2\t2*5\tAdductor Stretch\n" +
+"F1\t2\t5\tShort Spine\n" +
+"F1\t1-2\t5\tMisback Series\n" +
+"F1\t1-2\t5-10\tBack Rowing Preps\n" +
+"F1\t0.5-1\t5-10\tSide Arm Preps Sitting\n" +
+"F1\t0.5-1\t5\tSide Twist Sitting\n" +
+"F1\t1-2\t5\tFront Rowing Preps\n" +
+"F1/2\t2-3\t10\tStomach Massage\n" +
+"F4\t0.5-1\t5\tArm Pulling Straps Long Box\n" +
+"F4\t2\t5\tRound Back Short Box\n" +
+"F4\t2\t5\tStraight Back Short Box\n" +
+"F4\t2\t5\tTwist Short Box\n" +
+"F4\t2\t3\tTree Short Box\n" +
+"F1\t1-2\t10\tElephant\n" +
+"F1\t1\t3-5\tMermaid\n" +
+"F1\t2\t10\tLeg Circles\n" +
+"F1\t2\t10\tKnee Stretches\n" +
+"F1\t2-3\t20-60\tRunning\n" +
+"F1\t2-3\t10\tHip Lift\n" +
+"F1\t2-3\t5-10\tHip Rolls\n" +
+"F1/2\t2\t5\tSingle Thigh Stretch\n" +
+"F4\t1-2\t8-10\tSide Splits\n" +
+"\n\u5099\u8a3b\uff1a";
 
-    function setLevel(l) {
-      level = l;
-      document.querySelectorAll('#level-row button').forEach(function(b) {
-        b.className = b.textContent === l ? 'on' : '';
-      });
-      updateContent();
-    }
+TMPL.inter =
+"\u300a \u4e2d\u7d1a \u300b\n" +
+"F\tS\t\u6b21\t\u52d5\u4f5c\n" +
+"F1\t3-4\t10-12\tFootwork\n" +
+"F1\t3-4\t10-12\tSecond Position\n" +
+"F1\t2-3\t5-10\tSingle Leg\n" +
+"F1/4\t2-3\t10*10\tHundred\n" +
+"F1/4\t2\t10\tBent & Stretch\n" +
+"F1\t2\t5\tShort Spine\n" +
+"F4\t2\t10\tBeats\n" +
+"F4\t2\t5\tFrog\n" +
+"F4\t2\t5\tStag\n" +
+"F4\t2\t5\tCoordination\n" +
+"F1\t1-2\t5\tBack Rowing\n" +
+"F1/4\t1-2\t5\tFront Rowing\n" +
+"F1/2\t2-3\t10\tStomach Massage\n" +
+"F4\t1\t5\tArm Pulling Straps Long Box\n" +
+"F4\t2\t10\tBackstroke Prep Long Box\n" +
+"F4\t1\t10\tFeet Pulling Straps\n" +
+"F4\t2\t5\tRound Back Short Box\n" +
+"F4\t2\t5\tStraight Back Short Box\n" +
+"F4\t2\t3\tTwist With Round Back Short Box\n" +
+"F4\t2\t3\tLean Short Box\n" +
+"F4\t2\t3\tTree Short Box\n" +
+"F1\t1\t3-5\tMermaid Short Box\n" +
+"F1\t1-2\t5\tLong Stretch\n" +
+"F1\t1-2\t3*2set\tDown Stretch\n" +
+"F1\t1-2\t5\tUp Stretch\n" +
+"F1\t1-2\t10\tElephant\n" +
+"F3\t2\t3\tSemicircle\n" +
+"F3/4\t1-2\t6\tChest Expansion\n" +
+"F3/4\t0.25-2\t5\tSide Arm Preps Kneeling\n" +
+"F3/4\t1-2\t5\tSide Twist Kneeling\n" +
+"F3/4\t1-2\t4\tReverse Expansion\n" +
+"F1\t1\t3-5\tMermaid\n" +
+"F1\t2\t10\tLeg Circles\n" +
+"F4\t2-3\t3\tLong Spine\n" +
+"F1\t2\t10\tKnee Stretches\n" +
+"F1\t2-3\t20-60\tRunning\n" +
+"F1\t2-3\t10\tHip Lift\n" +
+"F1\t2-3\t5-10\tHip Rolls\n" +
+"F1/2\t2\t5\tSingle Thigh Stretch\n" +
+"F1\t1-2\t5\tFront Splits\n" +
+"F1\t1-2\t5\tBack Splits\n" +
+"F4\t1-2\t8-10\tSide Splits\n" +
+"F1\t1-2\t5\tStar Prep\n" +
+"\n\u5099\u8a3b\uff1a";
 
-    function updateContent() {
-      var key = type === 'Pilates' ? 'Pilates_' + level : '重訓';
-      var ta = document.getElementById('content');
-      ta.value = T[key];
-      ta.style.height = 'auto';
-      ta.style.height = (ta.scrollHeight + 20) + 'px';
-    }
+function onTypeChange() {
+  var t = document.getElementById('type').value;
+  document.getElementById('level-wrap').style.display = t === 'pilates' ? 'block' : 'none';
+  fillTemplate();
+}
 
-    document.getElementById('date').value = new Date().toISOString().split('T')[0];
-    updateContent();
+function fillTemplate() {
+  var t = document.getElementById('type').value;
+  var key = t === 'pilates' ? document.getElementById('level').value : 'strength';
+  var ta = document.getElementById('content');
+  ta.value = TMPL[key];
+  ta.style.height = 'auto';
+  ta.style.height = (ta.scrollHeight + 20) + 'px';
+}
+
+document.getElementById('date').value = new Date().toISOString().split('T')[0];
+fillTemplate();
   </script>
 </body>
 </html>
