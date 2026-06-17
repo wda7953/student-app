@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智慧文字模板 Demo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, sans-serif; background: #f2f2f7; color: #1c1c1e; }
+    .header { background: #4A90D9; color: white; padding: 16px 20px; font-size: 20px; font-weight: 600; }
+    .note { background: #fff9c4; padding: 12px 16px; font-size: 14px; color: #555; border-bottom: 1px solid #e5e5ea; }
+    .section { padding: 16px 20px 8px; font-size: 13px; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-group { background: white; border-radius: 12px; margin: 0 16px 12px; overflow: hidden; }
+    .form-group label { display: block; padding: 12px 16px 4px; font-size: 13px; color: #8e8e93; }
+    .form-group input, .form-group select { width: 100%; padding: 8px 16px 14px; border: none; font-size: 16px; background: transparent; outline: none; }
+    .type-selector { display: flex; gap: 0; margin: 0 16px 12px; border-radius: 12px; overflow: hidden; }
+    .type-btn { flex: 1; padding: 14px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; background: white; color: #8e8e93; transition: all 0.2s; }
+    .type-btn.active { background: #4A90D9; color: white; }
+    .content-area { background: white; border-radius: 12px; margin: 0 16px 12px; padding: 4px 0; }
+    .content-area textarea { width: 100%; padding: 12px 16px; border: none; font-size: 15px; font-family: -apple-system, monospace; line-height: 1.7; background: transparent; outline: none; resize: none; min-height: 360px; color: #1c1c1e; }
+    .fill-hint { padding: 8px 16px 12px; font-size: 12px; color: #aaa; }
+    .btn-primary { width: calc(100% - 32px); margin: 0 16px; padding: 16px; background: #4A90D9; color: white; border: none; border-radius: 12px; font-size: 17px; font-weight: 600; cursor: pointer; }
+    .bottom { height: 40px; }
+  </style>
+</head>
+<body>
+  <div class="header">新增上課記錄（Demo）</div>
+  <div class="note">👆 選課程類型後，下方文字框自動填入對應範本。直接修改數值即可。</div>
+
+  <div class="section">日期</div>
+  <div class="form-group">
+    <input type="date" id="date" value="2026-06-17">
+  </div>
+
+  <div class="section">課程類型</div>
+  <div class="type-selector">
+    <button class="type-btn active" onclick="setType('重訓')">重訓</button>
+    <button class="type-btn" onclick="setType('Pilates')">Pilates</button>
+  </div>
+
+  <div class="section">課程內容 <span style="color:#aaa;font-size:11px;text-transform:none">（範本已填入，直接修改）</span></div>
+  <div class="content-area">
+    <textarea id="content"></textarea>
+    <div class="fill-hint">💡 不需要的行直接刪掉；重量/組/次填在冒號後面</div>
+  </div>
+
+  <button class="btn-primary">儲存</button>
+  <div class="bottom"></div>
+
+  <script>
+    const TEMPLATES = {
+      重訓: `【神經傳導】
+soft tissue：
+mobility：
+warm up：
+
+【爆發】
+動作：          重量：    組：   次：
+
+【下肢推】
+動作：          重量：    組：   次：
+
+【下肢拉】
+動作：          重量：    組：   次：
+
+【上肢推】
+動作：          重量：    組：   次：
+
+【上肢拉】
+動作：          重量：    組：   次：
+
+【核心】
+動作：          重量：    組：   次：
+
+【體能】
+`,
+      Pilates: `【Footwork 腿部練習】
+F：   S：   次：
+
+【Hundred】
+F：   S：   次：
+
+【Short Spine 脊椎捲曲】
+F：   S：   次：
+
+【Stomach Massage 腹部按摩】
+F：   S：   次：
+
+【Round Back 弓背 Short Box】
+F：   S：   次：
+
+【Straight Back 直背 Short Box】
+F：   S：   次：
+
+【Elephant 大象姿】
+F：   S：   次：
+
+【Knee Stretches 膝部伸展】
+F：   S：   次：
+
+【Running 跑步姿】
+F：   S：   次：
+
+【Side Splits 側劈叉】
+F：   S：   次：
+
+【備註】
+`
+    };
+
+    let currentType = '重訓';
+
+    function setType(type) {
+      currentType = type;
+      document.querySelectorAll('.type-btn').forEach(b => {
+        b.classList.toggle('active', b.textContent === type);
+      });
+      document.getElementById('content').value = TEMPLATES[type];
+      document.getElementById('content').style.height = 'auto';
+      document.getElementById('content').style.height = document.getElementById('content').scrollHeight + 'px';
+    }
+
+    // 初始化
+    setType('重訓');
+    document.getElementById('date').value = new Date().toISOString().split('T')[0];
+  </script>
+</body>
+</html>
