@@ -9,120 +9,160 @@
     body { font-family: -apple-system, sans-serif; background: #f2f2f7; color: #1c1c1e; }
     .header { background: #4A90D9; color: white; padding: 16px 20px; font-size: 20px; font-weight: 600; }
     .note { background: #fff9c4; padding: 12px 16px; font-size: 14px; color: #555; border-bottom: 1px solid #e5e5ea; }
-    .section { padding: 16px 20px 8px; font-size: 13px; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px; }
+    .section { padding: 14px 16px 6px; font-size: 13px; color: #8e8e93; letter-spacing: 0.3px; }
     .form-group { background: white; border-radius: 12px; margin: 0 16px 12px; overflow: hidden; }
-    .form-group label { display: block; padding: 12px 16px 4px; font-size: 13px; color: #8e8e93; }
-    .form-group input, .form-group select { width: 100%; padding: 8px 16px 14px; border: none; font-size: 16px; background: transparent; outline: none; }
-    .type-selector { display: flex; gap: 0; margin: 0 16px 12px; border-radius: 12px; overflow: hidden; }
-    .type-btn { flex: 1; padding: 14px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; background: white; color: #8e8e93; transition: all 0.2s; }
-    .type-btn.active { background: #4A90D9; color: white; }
-    .content-area { background: white; border-radius: 12px; margin: 0 16px 12px; padding: 4px 0; }
-    .content-area textarea { width: 100%; padding: 12px 16px; border: none; font-size: 15px; font-family: -apple-system, monospace; line-height: 1.7; background: transparent; outline: none; resize: none; min-height: 360px; color: #1c1c1e; }
-    .fill-hint { padding: 8px 16px 12px; font-size: 12px; color: #aaa; }
-    .btn-primary { width: calc(100% - 32px); margin: 0 16px; padding: 16px; background: #4A90D9; color: white; border: none; border-radius: 12px; font-size: 17px; font-weight: 600; cursor: pointer; }
-    .bottom { height: 40px; }
+    .form-group input { width: 100%; padding: 14px 16px; border: none; font-size: 16px; background: transparent; outline: none; }
+    .seg { display: flex; margin: 0 16px 12px; border-radius: 12px; overflow: hidden; border: 1px solid #4A90D9; }
+    .seg button { flex: 1; padding: 12px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; background: white; color: #4A90D9; }
+    .seg button.on { background: #4A90D9; color: white; }
+    .level-row { display: none; margin: 0 16px 12px; }
+    .level-row.show { display: flex; border-radius: 12px; overflow: hidden; border: 1px solid #e5e5ea; }
+    .level-row button { flex: 1; padding: 10px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; background: white; color: #8e8e93; }
+    .level-row button.on { background: #e8f0fb; color: #4A90D9; }
+    .content-box { background: white; border-radius: 12px; margin: 0 16px 12px; }
+    .content-box textarea { width: 100%; padding: 14px 16px; border: none; font-size: 14px; font-family: monospace; line-height: 1.8; background: transparent; outline: none; resize: none; min-height: 400px; color: #1c1c1e; }
+    .hint { padding: 6px 16px 12px; font-size: 12px; color: #aaa; }
+    .btn { width: calc(100% - 32px); margin: 0 16px 32px; padding: 16px; background: #4A90D9; color: white; border: none; border-radius: 12px; font-size: 17px; font-weight: 600; cursor: pointer; }
   </style>
 </head>
 <body>
   <div class="header">新增上課記錄（Demo）</div>
-  <div class="note">👆 選課程類型後，下方文字框自動填入對應範本。直接修改數值即可。</div>
+  <div class="note">選課程類型後，內容欄自動填入對應範本，直接修改數值即可。</div>
 
   <div class="section">日期</div>
   <div class="form-group">
-    <input type="date" id="date" value="2026-06-17">
+    <input type="date" id="date">
   </div>
 
   <div class="section">課程類型</div>
-  <div class="type-selector">
-    <button class="type-btn active" onclick="setType('重訓')">重訓</button>
-    <button class="type-btn" onclick="setType('Pilates')">Pilates</button>
+  <div class="seg" id="type-seg">
+    <button class="on" onclick="setType('重訓')">重訓</button>
+    <button onclick="setType('Pilates')">Pilates</button>
   </div>
 
-  <div class="section">課程內容 <span style="color:#aaa;font-size:11px;text-transform:none">（範本已填入，直接修改）</span></div>
-  <div class="content-area">
+  <div class="level-row" id="level-row">
+    <button class="on" onclick="setLevel('初級')">初級</button>
+    <button onclick="setLevel('中級')">中級</button>
+  </div>
+
+  <div class="section">課程內容</div>
+  <div class="content-box">
     <textarea id="content"></textarea>
-    <div class="fill-hint">💡 不需要的行直接刪掉；重量/組/次填在冒號後面</div>
+    <div class="hint">不需要的行直接刪掉；數值填在冒號後面</div>
   </div>
 
-  <button class="btn-primary">儲存</button>
-  <div class="bottom"></div>
+  <button class="btn">儲存</button>
 
   <script>
-    const TEMPLATES = {
-      重訓: `【神經傳導】
-soft tissue：
-mobility：
-warm up：
+    var type = '重訓', level = '初級';
 
-【爆發】
-動作：          重量：    組：   次：
-
-【下肢推】
-動作：          重量：    組：   次：
-
-【下肢拉】
-動作：          重量：    組：   次：
-
-【上肢推】
-動作：          重量：    組：   次：
-
-【上肢拉】
-動作：          重量：    組：   次：
-
-【核心】
-動作：          重量：    組：   次：
-
-【體能】
-`,
-      Pilates: `【Footwork 腿部練習】
-F：   S：   次：
-
-【Hundred】
-F：   S：   次：
-
-【Short Spine 脊椎捲曲】
-F：   S：   次：
-
-【Stomach Massage 腹部按摩】
-F：   S：   次：
-
-【Round Back 弓背 Short Box】
-F：   S：   次：
-
-【Straight Back 直背 Short Box】
-F：   S：   次：
-
-【Elephant 大象姿】
-F：   S：   次：
-
-【Knee Stretches 膝部伸展】
-F：   S：   次：
-
-【Running 跑步姿】
-F：   S：   次：
-
-【Side Splits 側劈叉】
-F：   S：   次：
-
-【備註】
-`
+    var T = {
+      重訓: "【soft tissue】\n\n【mobility】\n\n【warm up】\n\n【Activate】\n\n【爆發】\n動作：\t\t\tF：\tS：\t次：\n\n【下肢推】\n動作：\t\t\tF：\tS：\t次：\n\n【下肢拉】\n動作：\t\t\tF：\tS：\t次：\n\n【上肢推】\n動作：\t\t\tF：\tS：\t次：\n\n【上肢拉】\n動作：\t\t\tF：\tS：\t次：\n\n【核心】\n動作：\t\t\tF：\tS：\t次：\n\n【體能】\n",
+      Pilates_初級: "【初級】\nF\tS\t次\t動作\n" +
+        "F1\t3-4\t10-12\tFootwork 腿部練習\n" +
+        "F1\t3-4\t10-12\tSecond Position 第二種姿勢\n" +
+        "F1\t2-3\t5-10\tSingle Leg 單腿練習\n" +
+        "F1\t2-3\t10*10\tHundred\n" +
+        "F1\t2\t10\tBent & Stretch 屈伸練習\n" +
+        "F1\t2\t5\tLift & Lower 抬腿與放腿\n" +
+        "F1\t2\t2*5\tAdductor Stretch 伸展內收肌\n" +
+        "F1\t2\t5\tShort Spine 脊椎捲曲\n" +
+        "F1\t1-2\t5\tMisback Series 中背部系列\n" +
+        "F1\t1-2\t5-10\tBack Rowing Preps 後划準備\n" +
+        "F1\t0.5-1\t5-10\tSide Arm Preps Sitting 側坐手臂準備\n" +
+        "F1\t0.5-1\t5\tSide Twist Sitting 側轉坐姿\n" +
+        "F1\t1-2\t5\tFront Rowing Preps 前划準備\n" +
+        "F1/2\t2-3\t10\tStomach Massage 腹部按摩\n" +
+        "F4\t0.5-1\t5\tArm Pulling Straps Long Box\n" +
+        "F4\t2\t5\tRound Back Short Box 弓背\n" +
+        "F4\t2\t5\tStraight Back Short Box 直背\n" +
+        "F4\t2\t5\tTwist Short Box 扭轉\n" +
+        "F4\t2\t3\tTree Short Box 樹姿\n" +
+        "F1\t1-2\t10\tElephant 大象姿\n" +
+        "F1\t1\t3-5\tMermaid 美人魚姿\n" +
+        "F1\t2\t10\tLeg Circles 雙腳畫弧\n" +
+        "F1\t2\t10\tKnee Stretches 膝部伸展\n" +
+        "F1\t2-3\t20-60\tRunning 跑步姿\n" +
+        "F1\t2-3\t10\tHip Lift 髖部上抬\n" +
+        "F1\t2-3\t5-10\tHip Rolls 髖部起伏\n" +
+        "F1/2\t2\t5\tSingle Thigh Stretch 單側大腿伸展\n" +
+        "F4\t1-2\t8-10\tSide Splits 側劈叉\n" +
+        "\n備註：",
+      Pilates_中級: "【中級】\nF\tS\t次\t動作\n" +
+        "F1\t3-4\t10-12\tFootwork 腿部練習\n" +
+        "F1\t3-4\t10-12\tSecond Position 第二種姿勢\n" +
+        "F1\t2-3\t5-10\tSingle Leg 單腿練習\n" +
+        "F1/4\t2-3\t10*10\tHundred\n" +
+        "F1/4\t2\t10\tBent & Stretch 屈伸練習\n" +
+        "F1\t2\t5\tShort Spine 脊椎捲曲\n" +
+        "F4\t2\t10\tBeats 拍擊\n" +
+        "F4\t2\t5\tFrog 蛙跳姿\n" +
+        "F4\t2\t5\tStag 鹿跳姿\n" +
+        "F4\t2\t5\tCoordination 協調性\n" +
+        "F1\t1-2\t5\tBack Rowing 後划\n" +
+        "F1/4\t1-2\t5\tFront Rowing 前划\n" +
+        "F1/2\t2-3\t10\tStomach Massage 腹部按摩\n" +
+        "F4\t1\t5\tArm Pulling Straps Long Box\n" +
+        "F4\t2\t10\tBackstroke Prep Long Box 仰泳練習準備\n" +
+        "F4\t1\t10\tFeet Pulling Straps 腳拉動拉環\n" +
+        "F4\t2\t5\tRound Back Short Box 弓背\n" +
+        "F4\t2\t5\tStraight Back Short Box 直背\n" +
+        "F4\t2\t3\tTwist With Round Back Short Box 扭轉\n" +
+        "F4\t2\t3\tLean Short Box\n" +
+        "F4\t2\t3\tTree Short Box 樹姿\n" +
+        "F1\t1\t3-5\tMermaid Short Box 美人魚姿\n" +
+        "F1\t1-2\t5\tLong Stretch\n" +
+        "F1\t1-2\t3*2set\tDown Stretch\n" +
+        "F1\t1-2\t5\tUp Stretch\n" +
+        "F1\t1-2\t10\tElephant 大象姿\n" +
+        "F3\t2\t3\tSemicircle\n" +
+        "F3/4\t1-2\t6\tChest Expansion\n" +
+        "F3/4\t0.25-2\t5\tSide Arm Preps Kneeling 跪姿手臂準備\n" +
+        "F3/4\t1-2\t5\tSide Twist Kneeling 側轉跪姿\n" +
+        "F3/4\t1-2\t4\tReverse Expansion\n" +
+        "F1\t1\t3-5\tMermaid 美人魚姿\n" +
+        "F1\t2\t10\tLeg Circles 雙腳畫弧\n" +
+        "F4\t2-3\t3\tLong Spine 脊椎\n" +
+        "F1\t2\t10\tKnee Stretches 膝部伸展\n" +
+        "F1\t2-3\t20-60\tRunning 跑步姿\n" +
+        "F1\t2-3\t10\tHip Lift 髖部上抬\n" +
+        "F1\t2-3\t5-10\tHip Rolls 髖部起伏\n" +
+        "F1/2\t2\t5\tSingle Thigh Stretch 單側大腿伸展\n" +
+        "F1\t1-2\t5\tFront Splits 前劈叉\n" +
+        "F1\t1-2\t5\tBack Splits 後劈叉\n" +
+        "F4\t1-2\t8-10\tSide Splits 側劈叉\n" +
+        "F1\t1-2\t5\tStar Prep\n" +
+        "\n備註："
     };
 
-    let currentType = '重訓';
-
-    function setType(type) {
-      currentType = type;
-      document.querySelectorAll('.type-btn').forEach(b => {
-        b.classList.toggle('active', b.textContent === type);
+    function setType(t) {
+      type = t;
+      document.querySelectorAll('#type-seg button').forEach(function(b) {
+        b.className = b.textContent === t ? 'on' : '';
       });
-      document.getElementById('content').value = TEMPLATES[type];
-      document.getElementById('content').style.height = 'auto';
-      document.getElementById('content').style.height = document.getElementById('content').scrollHeight + 'px';
+      var lr = document.getElementById('level-row');
+      if (t === 'Pilates') { lr.className = 'level-row show'; } else { lr.className = 'level-row'; }
+      updateContent();
     }
 
-    // 初始化
-    setType('重訓');
+    function setLevel(l) {
+      level = l;
+      document.querySelectorAll('#level-row button').forEach(function(b) {
+        b.className = b.textContent === l ? 'on' : '';
+      });
+      updateContent();
+    }
+
+    function updateContent() {
+      var key = type === 'Pilates' ? 'Pilates_' + level : '重訓';
+      var ta = document.getElementById('content');
+      ta.value = T[key];
+      ta.style.height = 'auto';
+      ta.style.height = (ta.scrollHeight + 20) + 'px';
+    }
+
     document.getElementById('date').value = new Date().toISOString().split('T')[0];
+    updateContent();
   </script>
 </body>
 </html>
