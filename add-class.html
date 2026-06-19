@@ -199,6 +199,13 @@
         <button type="button" class="level-tab" id="tab-advanced" onclick="switchLevel('advanced')">中級</button>
       </div>
       <div class="exercise-grid" id="pilates-grid"></div>
+      <div style="display:flex;gap:8px;padding:4px 12px 12px">
+        <input id="custom-pilates" type="text" placeholder="自訂動作…"
+          style="flex:1;border:1.5px solid #e5e5ea;border-radius:8px;padding:8px 12px;font-size:15px;outline:none">
+        <button type="button" onclick="addCustomPilates()"
+          style="padding:8px 16px;background:#4A90D9;color:white;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer">加入</button>
+      </div>
+      <div id="pilates-custom-list" style="padding:0 12px 8px"></div>
     </div>
 
     <!-- ===== 智慧模板：重訓 ===== -->
@@ -342,6 +349,7 @@
     const studentId = new URLSearchParams(location.search).get('id');
     let pilatesLevel = 'beginner';
     let pilatesSelected = new Set();
+    let pilatesCustom = [];
     let currentCat = 'Warm up';
     let weightsAdded = []; // [{name, setting}]
     let _currentExercises = []; // 對應 weights-grid 目前的動作陣列
@@ -399,8 +407,36 @@
 
     function clearPilates() {
       pilatesSelected.clear();
+      pilatesCustom = [];
+      renderPilatesCustomList();
       buildPilatesGrid();
       rebuildContent();
+    }
+
+    function addCustomPilates() {
+      const input = document.getElementById('custom-pilates');
+      const name = input.value.trim();
+      if (!name) return;
+      pilatesCustom.push(name);
+      renderPilatesCustomList();
+      input.value = '';
+      rebuildContent();
+    }
+
+    function removePilatesCustom(idx) {
+      pilatesCustom.splice(idx, 1);
+      renderPilatesCustomList();
+      rebuildContent();
+    }
+
+    function renderPilatesCustomList() {
+      const el = document.getElementById('pilates-custom-list');
+      if (!pilatesCustom.length) { el.innerHTML = ''; return; }
+      el.innerHTML = pilatesCustom.map((name, i) => `
+        <div class="selected-ex-row">
+          <span class="selected-ex-name">${name}</span>
+          <button type="button" class="selected-ex-del" onclick="removePilatesCustom(${i})">✕</button>
+        </div>`).join('');
     }
 
     function updatePilatesCount() {
@@ -409,18 +445,13 @@
     }
 
     function getPilatesContent() {
-      // 按初級順序、再中級順序輸出，保持順序一致
       const parts = [];
       ['beginner', 'advanced'].forEach(lvl => {
         PILATES[lvl].forEach((ex, i) => {
-          const key = lvl + ':' + i;
-          if (pilatesSelected.has(key)) {
-            // 只輸出英文部分（斜線前）
-            const shortName = ex.split(' ')[0];
-            parts.push(shortName === ex ? ex : shortName + ' ' + ex.split(' ').slice(1).join(' '));
-          }
+          if (pilatesSelected.has(lvl + ':' + i)) parts.push(ex);
         });
       });
+      pilatesCustom.forEach(name => parts.push(name));
       return parts.join(' / ');
     }
 
