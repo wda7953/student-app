@@ -338,6 +338,7 @@
     let pilatesSelected = new Set();
     let currentCat = 'Warm up';
     let weightsAdded = []; // [{name, setting}]
+    let _currentExercises = []; // 對應 weights-grid 目前的動作陣列
 
     // ── 初始化 ────────────────────────────────────────
     document.getElementById('date').value = new Date().toISOString().split('T')[0];
@@ -434,15 +435,21 @@
     }
 
     function buildWeightsGrid() {
-      const exercises = WEIGHTS[currentCat] || [];
+      _currentExercises = WEIGHTS[currentCat] || [];
       const grid = document.getElementById('weights-grid');
-      grid.innerHTML = exercises.map(ex => {
+      grid.innerHTML = _currentExercises.map((ex, i) => {
         if (ex.startsWith('##')) {
           return `<div style="grid-column:1/-1;padding:8px 4px 2px;font-size:11px;color:#8e8e93;font-weight:700;letter-spacing:0.8px;text-transform:uppercase">${ex.slice(2)}</div>`;
         }
-        return `<button type="button" class="ex-chip" onclick="addWeight('${ex.replace(/'/g,"\\'")}'">${ex}</button>`;
+        return `<button type="button" class="ex-chip" data-idx="${i}">${ex}</button>`;
       }).join('');
     }
+
+    // 事件代理：所有 weights-grid 的點擊統一處理
+    document.getElementById('weights-grid').addEventListener('click', function(e) {
+      const btn = e.target.closest('[data-idx]');
+      if (btn) addWeight(_currentExercises[parseInt(btn.dataset.idx)]);
+    });
 
     function addWeight(name) {
       weightsAdded.push({ name, setting: '' });
