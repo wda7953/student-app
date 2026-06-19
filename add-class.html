@@ -445,14 +445,20 @@
     }
 
     function getPilatesContent() {
-      const parts = [];
-      ['beginner', 'advanced'].forEach(lvl => {
-        PILATES[lvl].forEach((ex, i) => {
-          if (pilatesSelected.has(lvl + ':' + i)) parts.push(ex);
-        });
+      const beginnerItems = [], advancedItems = [];
+      PILATES.beginner.forEach((ex, i) => {
+        if (pilatesSelected.has('beginner:' + i)) beginnerItems.push(ex);
       });
-      pilatesCustom.forEach(name => parts.push(name));
-      return parts.join(' / ');
+      PILATES.advanced.forEach((ex, i) => {
+        if (pilatesSelected.has('advanced:' + i)) advancedItems.push(ex);
+      });
+
+      const hasBoth = beginnerItems.length > 0 && advancedItems.length > 0;
+      const sections = [];
+      if (beginnerItems.length) sections.push((hasBoth ? '初級：' : '') + beginnerItems.join(' / '));
+      if (advancedItems.length) sections.push((hasBoth ? '中級：' : '') + advancedItems.join(' / '));
+      if (pilatesCustom.length) sections.push(pilatesCustom.join(' / '));
+      return sections.join(' ｜ ');
     }
 
     // ── 重訓模板 ──────────────────────────────────────
