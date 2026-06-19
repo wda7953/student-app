@@ -285,9 +285,10 @@
         'Bird-dog', 'QL active', 'Butt walk', 'Rolling'
       ],
       'Activate': [
-        '全身Activate', '上肢Activate', '下肢Activate', '下肢節律Activate',
-        '外側棒式', '屈膝側棒式', '蚌殼', 'Bridge', 'MSQ',
-        '踮腳等長', 'Wall Angle', '跪姿風車'
+        '##全身', '全身Activate', '熊爬', '蜥蜴爬', '橫向熊爬推拉', '站姿風車', '跪姿風車', '關節中心定位', 'T.G.U',
+        '##上肢', '上肢Activate', 'PNF Upper D1', 'PNF Upper D2', 'Chop/Lift', '彈力帶肩內旋', '坐姿三角度旋轉', '彈力帶YW', 'Wall Walk', 'Wall Angle', 'Arm Bar', 'Bent Arm Bar',
+        '##下肢', '下肢Activate', '大拇指四部', '橋式Bridge', '坐姿髖外轉', '側抬腿', '側躺髖旋轉', '蚌殼', '斜坐姿', '外側棒式', '單腳支撐+重量擺盪', 'Airplane', '坐姿踮腳', '仰臥踮腳',
+        '##下肢節律', '下肢節律Activate', '單邊階梯踮腳(三關節節律)', '踮腳等長', 'Monlu', 'MSQ', '登階旋轉'
       ],
       '爆發': [
         'Jump', 'Sled push', '藥球-高拋砸',
@@ -421,9 +422,12 @@
     function buildWeightsGrid() {
       const exercises = WEIGHTS[currentCat] || [];
       const grid = document.getElementById('weights-grid');
-      grid.innerHTML = exercises.map(ex =>
-        `<button type="button" class="ex-chip" onclick="addWeight('${ex}')">${ex}</button>`
-      ).join('');
+      grid.innerHTML = exercises.map(ex => {
+        if (ex.startsWith('##')) {
+          return `<div style="grid-column:1/-1;padding:8px 4px 2px;font-size:11px;color:#8e8e93;font-weight:700;letter-spacing:0.8px;text-transform:uppercase">${ex.slice(2)}</div>`;
+        }
+        return `<button type="button" class="ex-chip" onclick="addWeight('${ex.replace(/'/g,"\\'")}'">${ex}</button>`;
+      }).join('');
     }
 
     function addWeight(name) {
