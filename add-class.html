@@ -7,6 +7,149 @@
   <link rel="stylesheet" href="css/style.css">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#4A90D9">
+  <style>
+    /* 智慧模板專用樣式 */
+    .template-card {
+      background: white;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .template-header {
+      padding: 12px 16px 8px;
+      font-size: 13px;
+      color: #8e8e93;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid #f2f2f7;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .template-clear {
+      font-size: 13px;
+      color: #ff3b30;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 8px;
+    }
+    /* Level tabs */
+    .level-tabs {
+      display: flex;
+      padding: 10px 12px 6px;
+      gap: 8px;
+    }
+    .level-tab {
+      flex: 1;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1.5px solid #e5e5ea;
+      background: white;
+      font-size: 15px;
+      font-weight: 600;
+      color: #8e8e93;
+      cursor: pointer;
+    }
+    .level-tab.active {
+      background: #4A90D9;
+      border-color: #4A90D9;
+      color: white;
+    }
+    /* Category tabs */
+    .cat-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      padding: 10px 12px 6px;
+      gap: 6px;
+    }
+    .cat-tab {
+      padding: 6px 14px;
+      border-radius: 16px;
+      border: 1.5px solid #e5e5ea;
+      background: white;
+      font-size: 14px;
+      font-weight: 600;
+      color: #8e8e93;
+      cursor: pointer;
+    }
+    .cat-tab.active {
+      background: #4A90D9;
+      border-color: #4A90D9;
+      color: white;
+    }
+    /* Exercise chips grid */
+    .exercise-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      padding: 8px 12px 12px;
+    }
+    .ex-chip {
+      padding: 10px 8px;
+      border-radius: 8px;
+      border: 1.5px solid #e5e5ea;
+      background: white;
+      font-size: 13px;
+      color: #1c1c1e;
+      cursor: pointer;
+      text-align: left;
+      line-height: 1.3;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+    .ex-chip.selected {
+      background: #e8f1fc;
+      border-color: #4A90D9;
+      color: #1a60b0;
+      font-weight: 600;
+    }
+    /* 重訓已選動作 */
+    .selected-list {
+      padding: 0 12px 12px;
+    }
+    .selected-ex-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid #f2f2f7;
+    }
+    .selected-ex-row:last-child {
+      border-bottom: none;
+    }
+    .selected-ex-name {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1c1c1e;
+    }
+    .selected-ex-setting {
+      width: 120px;
+      border: 1px solid #e5e5ea;
+      border-radius: 6px;
+      padding: 5px 8px;
+      font-size: 13px;
+      color: #1c1c1e;
+      background: #f9f9fb;
+    }
+    .selected-ex-del {
+      background: none;
+      border: none;
+      color: #ff3b30;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+    }
+    .selected-count {
+      font-size: 13px;
+      color: #4A90D9;
+      font-weight: 600;
+    }
+    .hidden { display: none; }
+  </style>
 </head>
 <body>
   <div class="header">
@@ -15,11 +158,15 @@
     <span></span>
   </div>
   <div id="session-notice"></div>
+
   <form onsubmit="submitForm(event)" style="padding-top:16px">
+    <!-- 日期 -->
     <div class="form-group">
       <label>日期</label>
       <input id="date" type="date" required>
     </div>
+
+    <!-- 地點 -->
     <div class="form-group">
       <label>地點</label>
       <select id="venue" onchange="checkActivePayment()">
@@ -27,46 +174,306 @@
         <option value="柔力">柔力</option>
       </select>
     </div>
+
+    <!-- 類型 -->
     <div class="form-group">
       <label>類型</label>
-      <select id="type">
+      <select id="type" onchange="onTypeChange()">
         <option value="重訓">重訓</option>
         <option value="Pilates">Pilates</option>
         <option value="重訓+Pilates">重訓＋Pilates</option>
       </select>
     </div>
+
+    <!-- ===== 智慧模板：Pilates ===== -->
+    <div id="pilates-template" class="template-card hidden">
+      <div class="template-header">
+        <span>Pilates 動作</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="selected-count" id="pilates-count"></span>
+          <button type="button" class="template-clear" onclick="clearPilates()">清除</button>
+        </div>
+      </div>
+      <div class="level-tabs">
+        <button type="button" class="level-tab active" id="tab-beginner" onclick="switchLevel('beginner')">初級</button>
+        <button type="button" class="level-tab" id="tab-advanced" onclick="switchLevel('advanced')">中級</button>
+      </div>
+      <div class="exercise-grid" id="pilates-grid"></div>
+    </div>
+
+    <!-- ===== 智慧模板：重訓 ===== -->
+    <div id="weights-template" class="template-card hidden">
+      <div class="template-header">
+        <span>重訓動作</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="selected-count" id="weights-count"></span>
+          <button type="button" class="template-clear" onclick="clearWeights()">清除</button>
+        </div>
+      </div>
+      <div class="cat-tabs" id="cat-tabs"></div>
+      <div class="exercise-grid" id="weights-grid"></div>
+      <div class="selected-list" id="selected-list"></div>
+    </div>
+
+    <!-- 課程內容（自動填入，可手動改） -->
     <div class="form-group">
       <label>課程內容</label>
-      <textarea id="content" placeholder="今天做了什麼、動作設定、學員狀況…"></textarea>
+      <textarea id="content" placeholder="由上方模板自動填入，或直接輸入…" style="height:90px"></textarea>
     </div>
+
+    <!-- 額外收費 -->
     <div class="form-group">
       <label>額外收費（現金）</label>
       <input id="extra_charge" type="number" placeholder="0（臨時加人 +500）" min="0">
     </div>
+
+    <!-- 備註 -->
     <div class="form-group">
       <label>備註</label>
       <input id="notes" type="text" placeholder="補充說明">
     </div>
+
     <button type="submit" class="btn-primary">儲存</button>
+    <div style="height:30px"></div>
   </form>
 
   <script src="js/api.js"></script>
   <script>
-    const studentId = new URLSearchParams(location.search).get('id');
-    document.getElementById('date').value = new Date().toISOString().split('T')[0];
+    // ── 動作資料庫 ────────────────────────────────────
+    const PILATES = {
+      beginner: [
+        'Footwork 腿部練習', 'Second Position 第二種姿勢', 'Single Leg 單腿',
+        'Hundred', 'Bent & Stretch 屈伸', 'Lift & Lower 抬放腿',
+        'Adductor Stretch 內收肌', 'Short Spine 脊椎捲曲',
+        'Misback Series 中背部', 'Back Rowing Preps 後划準備',
+        'Side Arm Preps Sitting 側坐手臂', 'Side Twist Sitting 側轉坐姿',
+        'Front Rowing Preps 前划準備', 'Stomach Massage 腹部按摩',
+        'Arm Pulling Straps 雙臂拉環', 'Round Back Short Box 弓背',
+        'Straight Back Short Box 直背', 'Twist Short Box 扭轉',
+        'Tree Short Box 樹姿', 'Elephant 大象姿',
+        'Mermaid 美人魚姿', 'Leg Circles 雙腳畫弧',
+        'Knee Stretches 膝部伸展', 'Running 跑步姿',
+        'Hip Lift 髖部上抬', 'Hip Rolls 髖部起伏',
+        'Single Thigh Stretch 單側大腿', 'Side Splits 側劈叉'
+      ],
+      advanced: [
+        'Footwork 腿部練習', 'Second Position 第二種姿勢', 'Single Leg 單腿',
+        'Hundred', 'Bent & Stretch 屈伸', 'Short Spine 脊椎捲曲',
+        'Beats 拍擊', 'Frog 蛙跳姿', 'Stag 鹿跳姿', 'Coordination 協調性',
+        'Back Rowing 後划', 'Front Rowing 前划', 'Stomach Massage 腹部按摩',
+        'Arm Pulling Straps 雙臂拉環', 'Backstroke Prep 仰泳準備',
+        'Feet Pulling Straps 腳拉環', 'Round Back Short Box 弓背',
+        'Straight Back Short Box 直背', 'Twist With Round Back 扭轉',
+        'Lean Short Box 傾斜', 'Tree Short Box 樹姿',
+        'Mermaid Short Box 美人魚', 'Long Stretch', 'Down Stretch', 'Up Stretch',
+        'Elephant 大象姿', 'Semicircle', 'Chest Expansion',
+        'Side Arm Preps Kneeling 跪姿手臂', 'Side Twist Kneeling 側轉跪姿',
+        'Reverse Expansion', 'Mermaid 美人魚姿', 'Leg Circles 雙腳畫弧',
+        'Long Spine 長脊椎', 'Knee Stretches 膝部伸展', 'Running 跑步姿',
+        'Hip Lift 髖部上抬', 'Hip Rolls 髖部起伏',
+        'Single Thigh Stretch 單側大腿', 'Front Splits 前劈叉',
+        'Back Splits 後劈叉', 'Side Splits 側劈叉', 'Star Prep'
+      ]
+    };
 
-    async function checkActivePayment() {
-      const venue = document.getElementById('venue').value;
-      const notice = document.getElementById('session-notice');
-      const active = await API.apiGet('getActivePayment', { studentId, venue });
-      if (active && active.payment) {
-        const p = active.payment;
-        notice.innerHTML = `<div class="notice">目前周期：${p.package_name || '未命名'} · 已上 ${active.used} 堂，本堂為第 <strong>${active.session_number}</strong> 堂／共 ${p.period_sessions} 堂</div>`;
+    const WEIGHTS = {
+      '上肢推': ['臥推BP', '啞鈴臥推', '肩推SP', '啞鈴肩推', 'Cable單手推', '伏地挺身', '飛鳥'],
+      '上肢拉': ['划船Row', '單手划船', '輔助引體向上', 'Bicep Curl', '面拉', 'Lat Pulldown'],
+      '下肢推': ['深蹲SQ', '分腿蹲Split SQ', 'Box Pistol', '踮腳', '腿推'],
+      '下肢拉': ['RDL', '後勾腿', '臀橋', 'Nordic Curl'],
+      '核心': ['Bird Dog', '懸吊抬腿', '抓腳趾', '站姿風車', '跪姿風車', '仰臥勾腳 Flexie bar', 'Plank', 'Dead Bug'],
+      '其他': ['藥球-淘金側砸', 'Mat Semicircle', '站姿後勾腳', '農夫走路', '壺鈴擺盪']
+    };
+
+    // ── 狀態 ─────────────────────────────────────────
+    const studentId = new URLSearchParams(location.search).get('id');
+    let pilatesLevel = 'beginner';
+    let pilatesSelected = new Set();
+    let currentCat = '上肢推';
+    let weightsAdded = []; // [{name, setting}]
+
+    // ── 初始化 ────────────────────────────────────────
+    document.getElementById('date').value = new Date().toISOString().split('T')[0];
+    buildCatTabs();
+    onTypeChange();
+    checkActivePayment();
+
+    // ── 類型切換 ──────────────────────────────────────
+    function onTypeChange() {
+      const type = document.getElementById('type').value;
+      const showP = type === 'Pilates' || type === '重訓+Pilates';
+      const showW = type === '重訓' || type === '重訓+Pilates';
+      document.getElementById('pilates-template').classList.toggle('hidden', !showP);
+      document.getElementById('weights-template').classList.toggle('hidden', !showW);
+      if (showP) buildPilatesGrid();
+      if (showW) buildWeightsGrid();
+      rebuildContent();
+    }
+
+    // ── Pilates 模板 ──────────────────────────────────
+    function switchLevel(level) {
+      pilatesLevel = level;
+      document.getElementById('tab-beginner').classList.toggle('active', level === 'beginner');
+      document.getElementById('tab-advanced').classList.toggle('active', level === 'advanced');
+      buildPilatesGrid();
+    }
+
+    function buildPilatesGrid() {
+      const exercises = PILATES[pilatesLevel];
+      const grid = document.getElementById('pilates-grid');
+      grid.innerHTML = exercises.map((ex, i) => {
+        const key = pilatesLevel + ':' + i;
+        const sel = pilatesSelected.has(key);
+        return `<button type="button" class="ex-chip${sel ? ' selected' : ''}"
+          onclick="togglePilates('${pilatesLevel}',${i},this)">${ex}</button>`;
+      }).join('');
+      updatePilatesCount();
+    }
+
+    function togglePilates(level, idx, el) {
+      const key = level + ':' + idx;
+      if (pilatesSelected.has(key)) {
+        pilatesSelected.delete(key);
+        el.classList.remove('selected');
       } else {
-        notice.innerHTML = `<div class="notice">⚠️ ${venue} 目前無有效付款周期，此堂將標示為「未連結」</div>`;
+        pilatesSelected.add(key);
+        el.classList.add('selected');
+      }
+      updatePilatesCount();
+      rebuildContent();
+    }
+
+    function clearPilates() {
+      pilatesSelected.clear();
+      buildPilatesGrid();
+      rebuildContent();
+    }
+
+    function updatePilatesCount() {
+      const n = pilatesSelected.size;
+      document.getElementById('pilates-count').textContent = n > 0 ? `已選 ${n}` : '';
+    }
+
+    function getPilatesContent() {
+      // 按初級順序、再中級順序輸出，保持順序一致
+      const parts = [];
+      ['beginner', 'advanced'].forEach(lvl => {
+        PILATES[lvl].forEach((ex, i) => {
+          const key = lvl + ':' + i;
+          if (pilatesSelected.has(key)) {
+            // 只輸出英文部分（斜線前）
+            const shortName = ex.split(' ')[0];
+            parts.push(shortName === ex ? ex : shortName + ' ' + ex.split(' ').slice(1).join(' '));
+          }
+        });
+      });
+      return parts.join(' / ');
+    }
+
+    // ── 重訓模板 ──────────────────────────────────────
+    function buildCatTabs() {
+      const tabs = document.getElementById('cat-tabs');
+      tabs.innerHTML = Object.keys(WEIGHTS).map(cat =>
+        `<button type="button" class="cat-tab${cat === currentCat ? ' active' : ''}"
+          onclick="switchCat('${cat}',this)">${cat}</button>`
+      ).join('');
+    }
+
+    function switchCat(cat, el) {
+      currentCat = cat;
+      document.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      buildWeightsGrid();
+    }
+
+    function buildWeightsGrid() {
+      const exercises = WEIGHTS[currentCat] || [];
+      const grid = document.getElementById('weights-grid');
+      grid.innerHTML = exercises.map(ex =>
+        `<button type="button" class="ex-chip" onclick="addWeight('${ex}')">${ex}</button>`
+      ).join('');
+    }
+
+    function addWeight(name) {
+      weightsAdded.push({ name, setting: '' });
+      renderSelectedList();
+      rebuildContent();
+    }
+
+    function removeWeight(idx) {
+      weightsAdded.splice(idx, 1);
+      renderSelectedList();
+      rebuildContent();
+    }
+
+    function updateWeightSetting(idx, val) {
+      weightsAdded[idx].setting = val;
+      rebuildContent();
+    }
+
+    function renderSelectedList() {
+      const list = document.getElementById('selected-list');
+      if (weightsAdded.length === 0) {
+        list.innerHTML = '';
+        document.getElementById('weights-count').textContent = '';
+        return;
+      }
+      document.getElementById('weights-count').textContent = `已加 ${weightsAdded.length}`;
+      list.innerHTML = weightsAdded.map((item, i) => `
+        <div class="selected-ex-row">
+          <span class="selected-ex-name">${item.name}</span>
+          <input class="selected-ex-setting" type="text" value="${item.setting}"
+            placeholder="kg/組×次" oninput="updateWeightSetting(${i},this.value)">
+          <button type="button" class="selected-ex-del" onclick="removeWeight(${i})">✕</button>
+        </div>`
+      ).join('');
+    }
+
+    function clearWeights() {
+      weightsAdded = [];
+      renderSelectedList();
+      rebuildContent();
+    }
+
+    function getWeightsContent() {
+      return weightsAdded.map(item =>
+        item.setting ? `${item.name} (${item.setting})` : item.name
+      ).join(' / ');
+    }
+
+    // ── 課程內容 ──────────────────────────────────────
+    function rebuildContent() {
+      const type = document.getElementById('type').value;
+      const parts = [];
+      if ((type === 'Pilates' || type === '重訓+Pilates') && pilatesSelected.size > 0) {
+        parts.push(getPilatesContent());
+      }
+      if ((type === '重訓' || type === '重訓+Pilates') && weightsAdded.length > 0) {
+        parts.push(getWeightsContent());
+      }
+      if (parts.length > 0) {
+        document.getElementById('content').value = parts.join(' | ');
       }
     }
 
+    // ── 付款周期查詢 ──────────────────────────────────
+    async function checkActivePayment() {
+      const venue = document.getElementById('venue').value;
+      const notice = document.getElementById('session-notice');
+      try {
+        const active = await API.apiGet('getActivePayment', { studentId, venue });
+        if (active && active.payment) {
+          const p = active.payment;
+          notice.innerHTML = `<div class="notice">目前周期：${p.package_name || '未命名'} · 已上 ${active.used} 堂，本堂為第 <strong>${active.session_number}</strong> 堂／共 ${p.period_sessions} 堂</div>`;
+        } else {
+          notice.innerHTML = `<div class="notice">⚠️ ${venue} 目前無有效付款周期，此堂將標示為「未連結」</div>`;
+        }
+      } catch(e) {
+        notice.innerHTML = '';
+      }
+    }
+
+    // ── 儲存 ──────────────────────────────────────────
     async function submitForm(e) {
       e.preventDefault();
       const btn = document.querySelector('.btn-primary');
@@ -83,8 +490,6 @@
       });
       history.back();
     }
-
-    checkActivePayment();
   </script>
 </body>
 </html>
