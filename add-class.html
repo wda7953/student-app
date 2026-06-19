@@ -212,6 +212,12 @@
       </div>
       <div class="cat-tabs" id="cat-tabs"></div>
       <div class="exercise-grid" id="weights-grid"></div>
+      <div style="display:flex;gap:8px;padding:4px 12px 12px">
+        <input id="custom-ex" type="text" placeholder="自訂動作…"
+          style="flex:1;border:1.5px solid #e5e5ea;border-radius:8px;padding:8px 12px;font-size:15px;outline:none">
+        <button type="button" onclick="addCustomEx()"
+          style="padding:8px 16px;background:#4A90D9;color:white;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer">加入</button>
+      </div>
       <div class="selected-list" id="selected-list"></div>
     </div>
 
@@ -455,6 +461,14 @@
       weightsAdded.push({ name, setting: '' });
       renderSelectedList();
       rebuildContent();
+    }
+
+    function addCustomEx() {
+      const input = document.getElementById('custom-ex');
+      const name = input.value.trim();
+      if (!name) return;
+      addWeight(name);
+      input.value = '';
     }
 
     function removeWeight(idx) {
