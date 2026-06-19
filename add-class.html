@@ -185,6 +185,14 @@
       </select>
     </div>
 
+    <!-- 一對二夥伴（選填） -->
+    <div class="form-group">
+      <label>一對二夥伴 <span style="color:#8e8e93;font-weight:400">（選填）</span></label>
+      <select id="partner">
+        <option value="">無（一對一）</option>
+      </select>
+    </div>
+
     <!-- ===== 智慧模板：Pilates ===== -->
     <div id="pilates-template" class="template-card hidden">
       <div class="template-header">
@@ -347,6 +355,20 @@
 
     // ── 狀態 ─────────────────────────────────────────
     const studentId = new URLSearchParams(location.search).get('id');
+
+    // 載入學員清單供一對二選擇
+    API.apiGet('getStudents').then(students => {
+      const sel = document.getElementById('partner');
+      students
+        .filter(s => s.id !== studentId && s.status === 'active')
+        .sort((a, b) => a.name.localeCompare(b.name, 'zh-TW'))
+        .forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.id;
+          opt.textContent = s.name;
+          sel.appendChild(opt);
+        });
+    });
     let pilatesLevel = 'beginner';
     let pilatesSelected = new Set();
     let pilatesCustom = [];
@@ -587,15 +609,30 @@
       const btn = document.querySelector('.btn-primary');
       btn.textContent = '儲存中…';
       btn.disabled = true;
-      await API.apiPost('addClass', {
-        student_id: studentId,
+
+      const payload = {
         date: document.getElementById('date').value,
         venue: document.getElementById('venue').value,
         type: document.getElementById('type').value,
         content: document.getElementById('content').value,
         extra_charge: Number(document.getElementById('extra_charge').value) || 0,
         notes: document.getElementById('notes').value
-      });
+      };
+
+      const partnerId = document.getElementById('partner').value;
+
+      if (partnerId) {
+        // 一對二：同時建兩筆，備註自動加「一對二」
+        const partnerName = document.getElementById('partner').selectedOptions[0].text;
+        const selfNotes = payload.notes ? payload.notes + '（一對二）' : '一對二';
+        await Promise.all([
+          API.apiPost('addClass', { ...payload, student_id: studentId, notes: selfNotes }),
+          API.apiPost('addClass', { ...payload, student_id: partnerId, notes: selfNotes })
+        ]);
+      } else {
+        await API.apiPost('addClass', { ...payload, student_id: studentId });
+      }
+
       history.back();
     }
   </script>
