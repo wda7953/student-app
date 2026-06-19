@@ -277,19 +277,49 @@
     };
 
     const WEIGHTS = {
-      '上肢推': ['臥推BP', '啞鈴臥推', '肩推SP', '啞鈴肩推', 'Cable單手推', '伏地挺身', '飛鳥'],
-      '上肢拉': ['划船Row', '單手划船', '輔助引體向上', 'Bicep Curl', '面拉', 'Lat Pulldown'],
-      '下肢推': ['深蹲SQ', '分腿蹲Split SQ', 'Box Pistol', '踮腳', '腿推'],
-      '下肢拉': ['RDL', '後勾腿', '臀橋', 'Nordic Curl'],
-      '核心': ['Bird Dog', '懸吊抬腿', '抓腳趾', '站姿風車', '跪姿風車', '仰臥勾腳 Flexie bar', 'Plank', 'Dead Bug'],
-      '其他': ['藥球-淘金側砸', 'Mat Semicircle', '站姿後勾腳', '農夫走路', '壺鈴擺盪']
+      'Warm up': [
+        'soft tissue', 'mobility', 'warm up',
+        '髖活動', '腿後伸展', '胸肌伸展', '側線伸展',
+        '前跨步伸展', '腳踝活動', '站姿髖活動', '俯身髖活動'
+      ],
+      'Activate': [
+        '全身Activate', '上肢Activate', '下肢Activate', '下肢節律Activate',
+        '外側棒式', '屈膝側棒式', '蚌殼', 'Bridge', 'MSQ',
+        '踮腳等長', 'Wall Angle', '跪姿風車'
+      ],
+      '爆發': [
+        'Jump', 'Sled push', '藥球-高拋砸',
+        '壺鈴Swing', '繩梯', '跳格子', '反應式抬腿登階'
+      ],
+      '下肢推拉': [
+        '深蹲SQ', '分腿蹲Split SQ', '登階Step up', 'R.F.E.S.S', 'A.F.E.S.S',
+        'Lunges', '側蹲Side SQ', 'Box Pistol', '踮腳',
+        'RDL', '單腳RDL', '後勾腿', 'Hip extension後抬腿', '臀橋'
+      ],
+      '上肢推拉': [
+        '臥推BP', '上斜臥推Incline BP', '上斜挺身Incline Push up', '伏地挺身',
+        '肩推SP', 'Chest fly', 'Cable單手推', '三頭',
+        '划船Row', '單手划船', '滑輪下拉Pull down', '直臂下壓',
+        '懸吊引體', 'Face pull', '二頭'
+      ],
+      '複合動作': [
+        '藥球-淘金側砸', '旋轉推', 'Thruster', '火箭推',
+        'Cable+肩推', '高跪姿Chop-Lift', '地雷管爆發肩推'
+      ],
+      '核心': [
+        '棒式Plank', 'Bird Dog', '懸吊抬腿', '雙手負重抬腿',
+        '抓腳趾', '屈膝側棒式+旋轉', '藥球-淘金側砸'
+      ],
+      '體能': [
+        '繩梯', 'Ski', '農夫走路', '推雪橇', '戰繩', '划船機', '壺鈴Swing'
+      ]
     };
 
     // ── 狀態 ─────────────────────────────────────────
     const studentId = new URLSearchParams(location.search).get('id');
     let pilatesLevel = 'beginner';
     let pilatesSelected = new Set();
-    let currentCat = '上肢推';
+    let currentCat = 'Warm up';
     let weightsAdded = []; // [{name, setting}]
 
     // ── 初始化 ────────────────────────────────────────
