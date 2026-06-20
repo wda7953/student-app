@@ -620,17 +620,26 @@
       };
 
       const partnerId = document.getElementById('partner').value;
+      const venue = payload.venue;
 
       if (partnerId) {
-        // 一對二：同時建兩筆，備註自動加「一對二」
-        const partnerName = document.getElementById('partner').selectedOptions[0].text;
+        // 一對二：各自查付款週期，各連各的
         const selfNotes = payload.notes ? payload.notes + '（一對二）' : '一對二';
+        const [selfActive, partnerActive] = await Promise.all([
+          API.apiGet('getActivePayment', { studentId, venue }),
+          API.apiGet('getActivePayment', { studentId: partnerId, venue })
+        ]);
+        const selfPayId = selfActive?.payment?.id || '';
+        const partnerPayId = partnerActive?.payment?.id || '';
         await Promise.all([
-          API.apiPost('addClass', { ...payload, student_id: studentId, notes: selfNotes }),
-          API.apiPost('addClass', { ...payload, student_id: partnerId, notes: selfNotes })
+          API.apiPost('addClass', { ...payload, student_id: studentId, notes: selfNotes, payment_id: selfPayId }),
+          API.apiPost('addClass', { ...payload, student_id: partnerId, notes: selfNotes, payment_id: partnerPayId })
         ]);
       } else {
-        await API.apiPost('addClass', { ...payload, student_id: studentId });
+        // 一對一：查自己的付款週期
+        const active = await API.apiGet('getActivePayment', { studentId, venue });
+        const paymentId = active?.payment?.id || '';
+        await API.apiPost('addClass', { ...payload, student_id: studentId, payment_id: paymentId });
       }
 
       history.back();
