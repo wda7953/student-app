@@ -59,16 +59,38 @@
       const btn = document.querySelector('.btn-primary');
       btn.textContent = '儲存中…';
       btn.disabled = true;
-      await API.apiPost('addPayment', {
+
+      const venue = document.getElementById('venue').value;
+      const sessions = Number(document.getElementById('sessions').value);
+
+      // 1. 建立收款記錄
+      const result = await API.apiPost('addPayment', {
         student_id: studentId,
-        venue: document.getElementById('venue').value,
+        venue,
         package_name: document.getElementById('package_name').value,
         date: document.getElementById('date').value,
-        period_sessions: Number(document.getElementById('sessions').value),
+        period_sessions: sessions,
         total_amount: Number(document.getElementById('total').value) || 0,
         paid_amount: Number(document.getElementById('paid').value) || 0,
         notes: document.getElementById('notes').value
       });
+
+      // 2. 自動補連未連結的課程（最多連到 period_sessions 堂）
+      const paymentId = result?.id;
+      if (paymentId && sessions > 0) {
+        btn.textContent = '連結課程中…';
+        const allClasses = await API.apiGet('getClasses');
+        const unlinked = allClasses
+          .filter(c => c.student_id === studentId && c.venue === venue && !c.payment_id)
+          .sort((a, b) => a.date < b.date ? -1 : 1)
+          .slice(0, sessions);
+        if (unlinked.length > 0) {
+          await Promise.all(unlinked.map(c =>
+            API.apiPost('updateClass', { id: c.id, payment_id: paymentId })
+          ));
+        }
+      }
+
       history.back();
     }
   </script>
