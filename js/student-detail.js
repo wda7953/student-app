@@ -208,7 +208,7 @@ async function load() {
   }
 
   document.getElementById('payments-card').innerHTML = payments.length
-    ? payments.map(p => {
+    ? [...payments].sort((a, b) => String(a.date).localeCompare(String(b.date))).map(p => {
         const used = classes.filter(c => c.payment_id === p.id).length;
         const pct = Math.min(100, Math.round(used / Number(p.period_sessions) * 100));
         return `<div class="payment-period">
@@ -229,3 +229,6 @@ async function load() {
 }
 
 load();
+
+// bfcache 恢復時（iOS Safari PWA history.back()）重新載入資料
+window.addEventListener('pageshow', (e) => { if (e.persisted) load(); });
