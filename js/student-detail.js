@@ -135,11 +135,20 @@ function sessionLabel(cls, payments) {
 }
 
 async function load() {
-  const [students, classes, payments] = await Promise.all([
-    API.apiGet('getStudents'),
-    API.apiGet('getClasses', { studentId }),
-    API.apiGet('getPayments', { studentId })
-  ]);
+  let students, classes, payments;
+  try {
+    [students, classes, payments] = await Promise.all([
+      API.apiGet('getStudents'),
+      API.apiGet('getClasses', { studentId }),
+      API.apiGet('getPayments', { studentId })
+    ]);
+  } catch (e) {
+    ['info-card', 'classes-card', 'payments-card'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.innerHTML = `<div class="empty">載入失敗，請重新整理</div>`; el.classList.remove('hidden'); }
+    });
+    return;
+  }
 
   const s = students.find(s => s.id === studentId);
   if (!s) { document.body.innerHTML = '<div class="empty">找不到學員</div>'; return; }
