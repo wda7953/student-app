@@ -1,5 +1,35 @@
 const studentId = new URLSearchParams(location.search).get('id');
 
+// 解析課程內容：將「初級：xxx ｜ 中級：xxx」格式轉成帶樣式的 HTML
+function formatContent(content) {
+  if (!content) return '-';
+  // 有初級/中級標籤
+  if (content.includes('初級：') || content.includes('中級：')) {
+    return content.split('｜').map(part => {
+      part = part.trim();
+      if (part.startsWith('初級：')) {
+        return `<span class="level-label level-beginner">初級</span> ${escHtml(part.slice(3))}`;
+      } else if (part.startsWith('中級：')) {
+        return `<span class="level-label level-advanced">中級</span> ${escHtml(part.slice(3))}`;
+      }
+      return escHtml(part);
+    }).join('<br>');
+  }
+  return escHtml(content);
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// 課程項目的 CSS 類別（依類型加顏色）
+function classTypeClass(type) {
+  if (!type) return '';
+  if (type === '重訓+Pilates' || type === '重訓＋Pilates') return 'type-重訓Pilates';
+  if (type === 'Pilates') return 'type-Pilates';
+  return 'type-重訓';
+}
+
 function goAddClass() { location.href = `add-class.html?id=${studentId}`; }
 function goAddPayment() { location.href = `add-payment.html?id=${studentId}`; }
 
@@ -111,19 +141,50 @@ async function load() {
     }
   });
 
+  function renderClassItem(c, payments) {
+    const p = c.payment_id ? payments.find(p => p.id === c.payment_id) : null;
+    const sessionTag = p
+      ? `<span class="session-tag">第${c._session_number}堂／${p.period_sessions}堂 ${p.package_name || ''}</span>`
+      : '<span class="session-tag" style="background:#f5f5f5;color:#8e8e93">未連結付款</span>';
+    const extraTag = Number(c.extra_charge) > 0
+      ? `<span class="extra-charge-tag">+$${Number(c.extra_charge).toLocaleString()}</span>` : '';
+    return `<div class="class-item ${classTypeClass(c.type)}">
+      <div class="class-date">${c.date} · ${c.venue || ''} · ${c.type || ''}</div>
+      <div class="class-content">${formatContent(c.content)}</div>
+      <div style="margin-top:6px">${sessionTag}${extraTag}</div>
+      ${c.notes ? `<div class="class-date" style="margin-top:4px">${escHtml(c.notes)}</div>` : ''}
+    </div>`;
+  }
+
+  // 判斷是否有雙場地資料（重訓 + Pilates 在不同地點）
+  const wushuClasses  = classes.filter(c => c.venue === '武士');
+  const rouliClasses  = classes.filter(c => c.venue === '柔力');
+  const isDual = wushuClasses.length > 0 && rouliClasses.length > 0;
+
+  // 單欄卡片（縱向或只有單場地）
   document.getElementById('classes-card').innerHTML = classes.length
-    ? classes.map(c => {
-        const p = c.payment_id ? payments.find(p => p.id === c.payment_id) : null;
-        const sessionTag = p ? `<span class="session-tag">第${c._session_number}堂／${p.period_sessions}堂 ${p.package_name || ''}</span>` : '<span class="session-tag" style="background:#f5f5f5;color:#8e8e93">未連結付款</span>';
-        const extraTag = Number(c.extra_charge) > 0 ? `<span class="extra-charge-tag">+$${Number(c.extra_charge).toLocaleString()}</span>` : '';
-        return `<div class="class-item">
-          <div class="class-date">${c.date} · ${c.venue || ''} · ${c.type || ''}</div>
-          <div class="class-content">${c.content || '-'}</div>
-          <div style="margin-top:6px">${sessionTag}${extraTag}</div>
-          ${c.notes ? `<div class="class-date" style="margin-top:4px">${c.notes}</div>` : ''}
-        </div>`;
-      }).join('')
+    ? classes.map(c => renderClassItem(c, payments)).join('')
     : '<div class="empty">尚無上課記錄</div>';
+
+  // 雙欄分頁（橫向 iPad）
+  const dualEl = document.getElementById('dual-classes');
+  const singleCard = document.getElementById('classes-card');
+  if (isDual && dualEl) {
+    dualEl.innerHTML = `
+      <div class="dual-view-col">
+        <div class="dual-view-col-title wushu">武士 重訓</div>
+        ${wushuClasses.length ? wushuClasses.map(c => renderClassItem(c, payments)).join('') : '<div class="empty">-</div>'}
+      </div>
+      <div class="dual-view-col">
+        <div class="dual-view-col-title pilates">柔力 Pilates</div>
+        ${rouliClasses.length ? rouliClasses.map(c => renderClassItem(c, payments)).join('') : '<div class="empty">-</div>'}
+      </div>`;
+    dualEl.classList.remove('hidden');
+    singleCard.classList.add('hide-landscape');
+  } else if (dualEl) {
+    dualEl.classList.add('hidden');
+    singleCard.classList.remove('hide-landscape');
+  }
 
   document.getElementById('payments-card').innerHTML = payments.length
     ? payments.map(p => {
