@@ -33,6 +33,22 @@ function classTypeClass(type) {
 function goAddClass() { location.href = `add-class.html?id=${studentId}`; }
 function goAddPayment() { location.href = `add-payment.html?id=${studentId}`; }
 
+function toggleDualView() {
+  const dual = document.getElementById('dual-classes');
+  const single = document.getElementById('classes-card');
+  const btn = document.getElementById('toggle-view-btn');
+  const isDualShown = !dual.classList.contains('hidden');
+  if (isDualShown) {
+    dual.classList.add('hidden');
+    single.classList.remove('hidden');
+    btn.textContent = '分欄';
+  } else {
+    dual.classList.remove('hidden');
+    single.classList.add('hidden');
+    btn.textContent = '單欄';
+  }
+}
+
 let currentStudent = null;
 
 function renderInfoView(s) {
@@ -169,6 +185,8 @@ async function load() {
   // 雙欄分頁（橫向 iPad）
   const dualEl = document.getElementById('dual-classes');
   const singleCard = document.getElementById('classes-card');
+  const toggleBtn = document.getElementById('toggle-view-btn');
+
   if (isDual && dualEl) {
     dualEl.innerHTML = `
       <div class="dual-view-col">
@@ -179,11 +197,14 @@ async function load() {
         <div class="dual-view-col-title pilates">柔力 Pilates</div>
         ${rouliClasses.length ? rouliClasses.map(c => renderClassItem(c, payments)).join('') : '<div class="empty">-</div>'}
       </div>`;
+    // 預設：雙欄顯示、單欄隱藏
     dualEl.classList.remove('hidden');
-    singleCard.classList.add('hide-landscape');
+    singleCard.classList.add('hidden');
+    if (toggleBtn) toggleBtn.style.display = 'inline-block';
   } else if (dualEl) {
     dualEl.classList.add('hidden');
-    singleCard.classList.remove('hide-landscape');
+    singleCard.classList.remove('hidden');
+    if (toggleBtn) toggleBtn.style.display = 'none';
   }
 
   document.getElementById('payments-card').innerHTML = payments.length

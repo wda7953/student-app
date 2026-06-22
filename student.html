@@ -18,11 +18,14 @@
   <div class="card" id="info-card"><div class="empty">載入中…</div></div>
   <div class="section">
     上課記錄
-    <button onclick="goAddClass()" style="float:right;background:none;border:none;color:#4A90D9;font-size:14px;cursor:pointer;font-weight:600">＋ 新增</button>
+    <span style="float:right;display:flex;gap:8px;align-items:center">
+      <button id="toggle-view-btn" onclick="toggleDualView()" style="display:none;background:none;border:1px solid #4A90D9;color:#4A90D9;font-size:12px;padding:2px 8px;border-radius:8px;cursor:pointer;font-weight:600">單欄</button>
+      <button onclick="goAddClass()" style="background:none;border:none;color:#4A90D9;font-size:14px;cursor:pointer;font-weight:600">＋ 新增</button>
+    </span>
   </div>
-  <!-- 縱向：單欄 -->
-  <div class="card" id="classes-card"><div class="empty">載入中…</div></div>
-  <!-- 橫向 iPad：雙欄（武士重訓 | 柔力Pilates）-->
+  <!-- 單欄（預設隱藏，切換後顯示）-->
+  <div class="card hidden" id="classes-card"><div class="empty">載入中…</div></div>
+  <!-- 雙欄（預設顯示）-->
   <div class="card dual-view-container hidden" id="dual-classes"></div>
   <div class="section">
     收款紀錄
