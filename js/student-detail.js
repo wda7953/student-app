@@ -150,6 +150,7 @@ async function load() {
     return;
   }
 
+  try {
   const s = students.find(s => s.id === studentId);
   if (!s) { document.body.innerHTML = '<div class="empty">找不到學員</div>'; return; }
   currentStudent = s;
@@ -235,6 +236,12 @@ async function load() {
         </div>`;
       }).join('')
     : '<div class="empty">尚無收款記錄</div>';
+  } catch(e) {
+    ['info-card', 'classes-card', 'payments-card'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.innerHTML = `<div class="empty">錯誤：${e.message}</div>`; el.classList.remove('hidden'); }
+    });
+  }
 }
 
 load();
