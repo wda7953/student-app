@@ -199,7 +199,10 @@ async function load() {
     const extraTag = Number(c.extra_charge) > 0
       ? `<span class="extra-charge-tag">+$${Number(c.extra_charge).toLocaleString()}</span>` : '';
     return `<div class="class-item ${classTypeClass(c.type)}">
-      <div class="class-date">${c.date} · ${c.venue || ''} · ${c.type || ''}${c.notes ? ' · ' + escHtml(c.notes) : ''}</div>
+      <div class="class-date-row">
+        <span>${c.date}${c.notes ? ' · ' + escHtml(c.notes) : ''}</span>
+        <span>${c.venue || ''} · ${c.type || ''}</span>
+      </div>
       <div class="class-content">${formatContent(c.content)}</div>
       <div style="margin-top:6px">${sessionTag}${extraTag}</div>
     </div>`;
