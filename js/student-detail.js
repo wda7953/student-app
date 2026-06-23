@@ -191,7 +191,7 @@ function sessionLabel(cls, payments) {
 }
 
 async function load() {
-  let students, classes, payments;
+  let students, classes, payments, partnerClasses = [];
   try {
     const partnerId = localStorage.getItem('partner_' + studentId) || '';
     const reqs = [
@@ -201,8 +201,7 @@ async function load() {
       partnerId ? API.apiGet('getClasses', { studentId: partnerId }) : Promise.resolve([])
     ];
     const [s0, s1, s2, s3] = await Promise.all(reqs);
-    [students, classes, payments] = [s0, s1, s2];
-    var partnerClasses = s3;
+    [students, classes, payments, partnerClasses] = [s0, s1, s2, s3];
   } catch (e) {
     ['info-card', 'classes-card', 'payments-card'].forEach(id => {
       const el = document.getElementById(id);
