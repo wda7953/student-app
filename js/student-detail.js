@@ -1,21 +1,45 @@
 const studentId = new URLSearchParams(location.search).get('id');
 
-// 解析課程內容：將「初級：xxx ｜ 中級：xxx」格式轉成帶樣式的 HTML
+// 解析課程內容：每個動作獨立一行，左邊名稱、右邊 setting（若有）
 function formatContent(content) {
   if (!content) return '-';
-  // 有初級/中級標籤
-  if (content.includes('初級：') || content.includes('中級：')) {
-    return content.split('｜').map(part => {
-      part = part.trim();
-      if (part.startsWith('初級：')) {
-        return `<span class="level-label level-beginner">初級</span> ${escHtml(part.slice(3))}`;
-      } else if (part.startsWith('中級：')) {
-        return `<span class="level-label level-advanced">中級</span> ${escHtml(part.slice(3))}`;
-      }
-      return escHtml(part);
-    }).join('<br>');
+
+  function parseItem(raw) {
+    raw = raw.trim();
+    const m = raw.match(/^(.+?)\s+\((.+)\)$/);
+    return m ? { name: m[1].trim(), setting: m[2].trim() } : { name: raw, setting: '' };
   }
-  return escHtml(content);
+
+  function renderRow(raw) {
+    const { name, setting } = parseItem(raw);
+    return `<div class="content-ex-row">
+      <span class="content-ex-name">${escHtml(name)}</span>
+      ${setting ? `<span class="content-ex-setting">${escHtml(setting)}</span>` : ''}
+    </div>`;
+  }
+
+  // Pilates 含初級/中級分組
+  if (content.includes('初級：') || content.includes('中級：')) {
+    return content.split('｜').map(section => {
+      section = section.trim();
+      let label = '', items = section;
+      if (section.startsWith('初級：')) { label = '初級'; items = section.slice(3); }
+      else if (section.startsWith('中級：')) { label = '中級'; items = section.slice(3); }
+      const rows = items.split(' / ').map(renderRow).join('');
+      const badge = label === '初級'
+        ? `<span class="level-label level-beginner">初級</span>`
+        : `<span class="level-label level-advanced">中級</span>`;
+      return label ? `<div class="content-level-header">${badge}</div>${rows}` : rows;
+    }).join('');
+  }
+
+  // 一般動作清單（/ 分隔）
+  if (content.includes(' / ')) {
+    return content.split(' / ').map(renderRow).join('');
+  }
+
+  // 純文字單行
+  return renderRow(content);
 }
 
 function escHtml(s) {
@@ -175,10 +199,9 @@ async function load() {
     const extraTag = Number(c.extra_charge) > 0
       ? `<span class="extra-charge-tag">+$${Number(c.extra_charge).toLocaleString()}</span>` : '';
     return `<div class="class-item ${classTypeClass(c.type)}">
-      <div class="class-date">${c.date} · ${c.venue || ''} · ${c.type || ''}</div>
+      <div class="class-date">${c.date} · ${c.venue || ''} · ${c.type || ''}${c.notes ? ' · ' + escHtml(c.notes) : ''}</div>
       <div class="class-content">${formatContent(c.content)}</div>
       <div style="margin-top:6px">${sessionTag}${extraTag}</div>
-      ${c.notes ? `<div class="class-date" style="margin-top:4px">${escHtml(c.notes)}</div>` : ''}
     </div>`;
   }
 
