@@ -342,10 +342,13 @@ function openLinkModal(classId) {
   modal.classList.remove('hidden');
   const partnerId = localStorage.getItem('partner_' + studentId) || '';
   const sel = document.getElementById('link-student-sel');
-  sel.innerHTML = allStudents
+  const self = allStudents.find(s => s.id === studentId);
+  const others = allStudents
     .filter(s => s.status === 'active' && s.id !== studentId)
-    .sort((a, b) => a.name.localeCompare(b.name, 'zh-TW'))
-    .map(s => `<option value="${s.id}" ${s.id === partnerId ? 'selected' : ''}>${s.name}</option>`)
+    .sort((a, b) => a.name.localeCompare(b.name, 'zh-TW'));
+  const allOpts = self ? [self, ...others] : others;
+  sel.innerHTML = allOpts
+    .map(s => `<option value="${s.id}" ${s.id === (partnerId || studentId) ? 'selected' : ''}>${s.name}${s.id === studentId ? '（本人）' : ''}</option>`)
     .join('');
   loadLinkPayments();
 }
