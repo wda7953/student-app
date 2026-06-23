@@ -61,6 +61,13 @@ form { padding: 0 20px; }
 .payment-progress-bar { height: 4px; background: #4A90D9; border-radius: 2px; }
 .empty { text-align: center; padding: 40px 20px; color: #8e8e93; }
 .notice { background: #fff9e6; border-left: 3px solid #f5c518; padding: 10px 14px; margin: 12px 20px; border-radius: 6px; font-size: 14px; color: #7a6000; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: flex; align-items: flex-end; }
+.modal-overlay.hidden { display: none; }
+.modal-box { background: #f2f2f7; border-radius: 16px 16px 0 0; width: 100%; padding: 20px; max-height: 75vh; overflow-y: auto; }
+.link-payment-row { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid #f2f2f7; background: white; cursor: pointer; }
+.link-payment-row:first-child { border-radius: 12px 12px 0 0; }
+.link-payment-row:last-child { border-bottom: none; border-radius: 0 0 12px 12px; }
+.link-payment-row input[type=radio] { width: 20px; height: 20px; flex-shrink: 0; accent-color: #4A90D9; }
 .status-led { width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
 .led-green { background: #30d158; box-shadow: 0 0 6px rgba(48,209,88,0.5); }
 .led-red { background: #ff3b30; box-shadow: 0 0 6px rgba(255,59,48,0.5); }

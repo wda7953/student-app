@@ -33,6 +33,22 @@
   </div>
   <div class="card" id="payments-card"><div class="empty">載入中…</div></div>
 
+  <!-- 連結付款 modal -->
+  <div id="link-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div style="font-size:17px;font-weight:700;margin-bottom:16px">連結到付款周期</div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label>學員</label>
+        <select id="link-student-sel" onchange="loadLinkPayments()" style="width:100%;padding:8px 16px;border:none;font-size:16px;background:transparent;outline:none"></select>
+      </div>
+      <div id="link-payments-list" style="max-height:240px;overflow-y:auto;border-radius:12px;margin-bottom:16px"></div>
+      <div style="display:flex;gap:12px">
+        <button onclick="closeLinkModal()" style="flex:1;padding:14px;background:#f2f2f7;border:none;border-radius:12px;font-size:16px;cursor:pointer">取消</button>
+        <button onclick="confirmLink()" style="flex:1;padding:14px;background:#4A90D9;color:white;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer">連結</button>
+      </div>
+    </div>
+  </div>
+
   <script src="js/api.js?v=2"></script>
   <script src="js/student-detail.js?v=2"></script>
 </body>

@@ -74,9 +74,18 @@ function toggleDualView() {
 }
 
 let currentStudent = null;
+let allStudents = [];
+
+function getPartnerName() {
+  const pid = localStorage.getItem('partner_' + studentId);
+  if (!pid) return null;
+  const p = allStudents.find(s => s.id === pid);
+  return p ? p.name : null;
+}
 
 function renderInfoView(s) {
   const ledClass = s.status === 'active' ? 'led-green' : 'led-red';
+  const partnerName = getPartnerName();
   return `
     <div class="card-row">
       <span class="card-label">狀態</span>
@@ -90,6 +99,7 @@ function renderInfoView(s) {
       <span class="card-label">等級</span>
       <span class="card-value">${s.level || '-'}</span>
     </div>
+    ${partnerName ? `<div class="card-row"><span class="card-label">夥伴</span><span class="card-value">${partnerName}</span></div>` : ''}
     ${s.notes ? `<div class="card-row"><span class="card-label">備注</span><span class="card-value">${s.notes}</span></div>` : ''}
     <div class="card-row" style="justify-content:flex-end;border-bottom:none">
       <button onclick="editInfo()" style="background:none;border:none;color:#4A90D9;font-size:14px;cursor:pointer;font-weight:600">編輯</button>
@@ -98,6 +108,12 @@ function renderInfoView(s) {
 }
 
 function renderInfoEdit(s) {
+  const currentPartnerId = localStorage.getItem('partner_' + studentId) || '';
+  const partnerOptions = allStudents
+    .filter(p => p.id !== studentId && p.status === 'active')
+    .sort((a, b) => a.name.localeCompare(b.name, 'zh-TW'))
+    .map(p => `<option value="${p.id}" ${p.id === currentPartnerId ? 'selected' : ''}>${p.name}</option>`)
+    .join('');
   return `
     <div class="card-row">
       <span class="card-label" style="flex-shrink:0">狀態</span>
@@ -116,6 +132,13 @@ function renderInfoEdit(s) {
     <div class="card-row">
       <span class="card-label" style="flex-shrink:0">等級</span>
       <input id="edit-level" value="${s.level || ''}" class="edit-input" placeholder="-">
+    </div>
+    <div class="card-row">
+      <span class="card-label" style="flex-shrink:0">夥伴</span>
+      <select id="edit-partner" class="edit-select">
+        <option value="">無</option>
+        ${partnerOptions}
+      </select>
     </div>
     <div style="padding:12px 16px;border-bottom:1px solid #f2f2f7">
       <div class="card-label" style="margin-bottom:6px">備注</div>
@@ -139,6 +162,11 @@ function cancelEdit() {
 async function saveInfo() {
   const saveBtn = document.querySelector('[onclick="saveInfo()"]');
   if (saveBtn) saveBtn.textContent = '儲存中…';
+  const partnerVal = document.getElementById('edit-partner')?.value;
+  if (partnerVal !== undefined) {
+    if (partnerVal) localStorage.setItem('partner_' + studentId, partnerVal);
+    else localStorage.removeItem('partner_' + studentId);
+  }
   const data = {
     id: currentStudent.id,
     venue: document.getElementById('edit-venue').value,
@@ -175,6 +203,7 @@ async function load() {
   }
 
   try {
+  allStudents = students;
   const s = students.find(s => s.id === studentId);
   if (!s) { document.body.innerHTML = '<div class="empty">找不到學員</div>'; return; }
   currentStudent = s;
@@ -195,7 +224,7 @@ async function load() {
     const p = c.payment_id ? payments.find(p => p.id === c.payment_id) : null;
     const sessionTag = p
       ? `<span class="session-tag">第${c._session_number}堂／${p.period_sessions}堂 ${p.package_name || ''}</span>`
-      : '<span class="session-tag" style="background:#f5f5f5;color:#8e8e93">未連結付款</span>';
+      : `<span class="session-tag" style="background:#f5f5f5;color:#8e8e93;cursor:pointer" onclick="openLinkModal('${c.id}')">未連結 · 連結▸</span>`;
     const extraTag = Number(c.extra_charge) > 0
       ? `<span class="extra-charge-tag">+$${Number(c.extra_charge).toLocaleString()}</span>` : '';
     return `<div class="class-item ${classTypeClass(c.type)}">
@@ -274,3 +303,51 @@ load();
 
 // bfcache 恢復時（iOS Safari PWA history.back()）重新載入資料
 window.addEventListener('pageshow', (e) => { if (e.persisted) load(); });
+
+// ── 連結付款 modal ────────────────────────────────────
+let linkingClassId = null;
+
+function openLinkModal(classId) {
+  linkingClassId = classId;
+  const modal = document.getElementById('link-modal');
+  modal.classList.remove('hidden');
+  const partnerId = localStorage.getItem('partner_' + studentId) || '';
+  const sel = document.getElementById('link-student-sel');
+  sel.innerHTML = allStudents
+    .filter(s => s.status === 'active' && s.id !== studentId)
+    .sort((a, b) => a.name.localeCompare(b.name, 'zh-TW'))
+    .map(s => `<option value="${s.id}" ${s.id === partnerId ? 'selected' : ''}>${s.name}</option>`)
+    .join('');
+  loadLinkPayments();
+}
+
+async function loadLinkPayments() {
+  const targetId = document.getElementById('link-student-sel').value;
+  const list = document.getElementById('link-payments-list');
+  if (!targetId) { list.innerHTML = ''; return; }
+  list.innerHTML = '<div class="empty">載入中…</div>';
+  const payments = await API.apiGet('getPayments', { studentId: targetId });
+  if (!payments.length) { list.innerHTML = '<div class="empty">無收款記錄</div>'; return; }
+  list.innerHTML = payments
+    .sort((a, b) => String(b.date).localeCompare(String(a.date)))
+    .map((p, i) => `<label class="link-payment-row">
+      <input type="radio" name="link-payment" value="${p.id}" ${i === 0 ? 'checked' : ''}>
+      <div>
+        <div class="card-value">${p.date} ${p.package_name || ''}</div>
+        <div class="card-label">${p.period_sessions} 堂 · $${Number(p.paid_amount).toLocaleString()}</div>
+      </div>
+    </label>`).join('');
+}
+
+function closeLinkModal() {
+  document.getElementById('link-modal').classList.add('hidden');
+  linkingClassId = null;
+}
+
+async function confirmLink() {
+  const paymentId = document.querySelector('#link-payments-list input[name=link-payment]:checked')?.value;
+  if (!paymentId || !linkingClassId) return;
+  await API.apiPost('updateClass', { id: linkingClassId, payment_id: paymentId });
+  closeLinkModal();
+  load();
+}

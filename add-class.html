@@ -586,15 +586,27 @@
       }
     }
 
-    // ── 付款周期查詢 ──────────────────────────────────
+    // ── 付款周期查詢（含夥伴 fallback）────────────────
+    async function getActivePaymentWithPartner(sid, venue) {
+      let active = await API.apiGet('getActivePayment', { studentId: sid, venue });
+      if (active?.payment) return { active, usingPartner: false };
+      const defaultPartnerId = localStorage.getItem('partner_' + sid);
+      if (defaultPartnerId) {
+        const partnerActive = await API.apiGet('getActivePayment', { studentId: defaultPartnerId, venue });
+        if (partnerActive?.payment) return { active: partnerActive, usingPartner: true, partnerId: defaultPartnerId };
+      }
+      return { active: null, usingPartner: false };
+    }
+
     async function checkActivePayment() {
       const venue = document.getElementById('venue').value;
       const notice = document.getElementById('session-notice');
       try {
-        const active = await API.apiGet('getActivePayment', { studentId, venue });
-        if (active && active.payment) {
+        const { active, usingPartner } = await getActivePaymentWithPartner(studentId, venue);
+        if (active?.payment) {
           const p = active.payment;
-          notice.innerHTML = `<div class="notice">目前周期：${p.package_name || '未命名'} · 已上 ${active.used} 堂，本堂為第 <strong>${active.session_number}</strong> 堂／共 ${p.period_sessions} 堂</div>`;
+          const prefix = usingPartner ? '⇄ 使用夥伴付款　' : '';
+          notice.innerHTML = `<div class="notice">${prefix}目前周期：${p.package_name || '未命名'} · 已上 ${active.used} 堂，本堂為第 <strong>${active.session_number}</strong> 堂／共 ${p.period_sessions} 堂</div>`;
         } else {
           notice.innerHTML = `<div class="notice">⚠️ ${venue} 目前無有效付款周期，此堂將標示為「未連結」</div>`;
         }
@@ -623,21 +635,21 @@
       const venue = payload.venue;
 
       if (partnerId) {
-        // 一對二：各自查付款週期，各連各的
+        // 一對二：各自查付款週期，各連各的（含夥伴 fallback）
         const selfNotes = payload.notes ? payload.notes + '（一對二）' : '一對二';
-        const [selfActive, partnerActive] = await Promise.all([
-          API.apiGet('getActivePayment', { studentId, venue }),
-          API.apiGet('getActivePayment', { studentId: partnerId, venue })
+        const [selfResult, partnerResult] = await Promise.all([
+          getActivePaymentWithPartner(studentId, venue),
+          getActivePaymentWithPartner(partnerId, venue)
         ]);
-        const selfPayId = selfActive?.payment?.id || '';
-        const partnerPayId = partnerActive?.payment?.id || '';
+        const selfPayId = selfResult.active?.payment?.id || '';
+        const partnerPayId = partnerResult.active?.payment?.id || '';
         await Promise.all([
           API.apiPost('addClass', { ...payload, student_id: studentId, notes: selfNotes, payment_id: selfPayId }),
           API.apiPost('addClass', { ...payload, student_id: partnerId, notes: selfNotes, payment_id: partnerPayId })
         ]);
       } else {
-        // 一對一：查自己的付款週期
-        const active = await API.apiGet('getActivePayment', { studentId, venue });
+        // 一對一：查自己的付款，無則抓夥伴的
+        const { active } = await getActivePaymentWithPartner(studentId, venue);
         const paymentId = active?.payment?.id || '';
         await API.apiPost('addClass', { ...payload, student_id: studentId, payment_id: paymentId });
       }
