@@ -1,5 +1,14 @@
 const studentId = new URLSearchParams(location.search).get('id');
 
+// 將日期轉為本地 YYYY-MM-DD，避免 UTC 時區差 -1 天
+function localDate(val) {
+  const d = new Date(val);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 // 解析課程內容：每個動作獨立一行，左邊名稱、右邊 setting（若有）
 function formatContent(content) {
   if (!content) return '-';
@@ -237,7 +246,7 @@ async function load() {
         : `<span class="session-tag" style="background:#e8f5e9;color:#2e7d32">已連結（共用）</span>`;
     const extraTag = Number(c.extra_charge) > 0
       ? `<span class="extra-charge-tag">+$${Number(c.extra_charge).toLocaleString()}</span>` : '';
-    const dateStr = String(c.date).slice(0, 10);
+    const dateStr = localDate(c.date);
     return `<div class="class-item ${classTypeClass(c.type)}">
       <div class="class-date-row">
         <span>${dateStr}${c.notes ? ' · ' + escHtml(c.notes) : ''}</span>
@@ -299,7 +308,7 @@ async function load() {
         return `<div class="payment-period">
           <div class="card-row" style="padding:0 0 8px">
             <div>
-              <div class="card-value">${String(p.date).slice(0,10)} ${p.venue ? `· ${p.venue}` : ''}</div>
+              <div class="card-value">${localDate(p.date)} ${p.venue ? `· ${p.venue}` : ''}</div>
               <div class="card-label">${p.package_name || ''} · ${usedLabel}</div>
             </div>
             <div style="text-align:right">
@@ -353,7 +362,7 @@ async function loadLinkPayments() {
     .map((p, i) => `<label class="link-payment-row">
       <input type="radio" name="link-payment" value="${p.id}" ${i === 0 ? 'checked' : ''}>
       <div>
-        <div class="card-value">${p.date} ${p.package_name || ''}</div>
+        <div class="card-value">${localDate(p.date)} ${p.package_name || ''}</div>
         <div class="card-label">${p.period_sessions} 堂 · $${Number(p.paid_amount).toLocaleString()}</div>
       </div>
     </label>`).join('');
