@@ -222,14 +222,17 @@ async function load() {
 
   function renderClassItem(c, payments) {
     const p = c.payment_id ? payments.find(p => p.id === c.payment_id) : null;
-    const sessionTag = p
-      ? `<span class="session-tag">第${c._session_number}堂／${p.period_sessions}堂 ${p.package_name || ''}</span>`
-      : `<span class="session-tag" style="background:#f5f5f5;color:#8e8e93;cursor:pointer" onclick="openLinkModal('${c.id}')">未連結 · 連結▸</span>`;
+    const sessionTag = !c.payment_id
+      ? `<span class="session-tag" style="background:#f5f5f5;color:#8e8e93;cursor:pointer" onclick="openLinkModal('${c.id}')">未連結 · 連結▸</span>`
+      : p
+        ? `<span class="session-tag">第${c._session_number}堂／${p.period_sessions}堂 ${p.package_name || ''}</span>`
+        : `<span class="session-tag" style="background:#e8f5e9;color:#2e7d32">已連結（共用）</span>`;
     const extraTag = Number(c.extra_charge) > 0
       ? `<span class="extra-charge-tag">+$${Number(c.extra_charge).toLocaleString()}</span>` : '';
+    const dateStr = String(c.date).slice(0, 10);
     return `<div class="class-item ${classTypeClass(c.type)}">
       <div class="class-date-row">
-        <span>${c.date}${c.notes ? ' · ' + escHtml(c.notes) : ''}</span>
+        <span>${dateStr}${c.notes ? ' · ' + escHtml(c.notes) : ''}</span>
         <span>${c.venue || ''} · ${c.type || ''}</span>
       </div>
       <div class="class-content">${formatContent(c.content)}</div>
