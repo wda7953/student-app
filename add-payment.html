@@ -76,7 +76,17 @@
   <script src="js/api.js"></script>
   <script>
     const studentId = new URLSearchParams(location.search).get('id');
-    document.getElementById('date').value = new Date().toISOString().split('T')[0];
+
+    function localDate(val) {
+      const d = new Date(val);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    const now = new Date();
+    document.getElementById('date').value = localDate(now);
 
     let unlinkedClasses = [];
 
@@ -102,7 +112,7 @@
         return `<div class="link-class-row">
           <input type="checkbox" id="cls-${i}" value="${c.id}">
           <label class="link-class-info" for="cls-${i}">
-            <div class="link-class-date">${c.date} · ${c.type || ''}</div>
+            <div class="link-class-date">${localDate(c.date)} · ${c.type || ''}</div>
             <div class="link-class-content">${preview || '-'}</div>
           </label>
         </div>`;

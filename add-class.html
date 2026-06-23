@@ -377,7 +377,7 @@
     let _currentExercises = []; // 對應 weights-grid 目前的動作陣列
 
     // ── 初始化 ────────────────────────────────────────
-    document.getElementById('date').value = new Date().toISOString().split('T')[0];
+    { const n = new Date(); document.getElementById('date').value = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; }
     buildCatTabs();
     onTypeChange();
     checkActivePayment();
