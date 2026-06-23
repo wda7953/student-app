@@ -164,8 +164,12 @@ async function saveInfo() {
   if (saveBtn) saveBtn.textContent = '儲存中…';
   const partnerVal = document.getElementById('edit-partner')?.value;
   if (partnerVal !== undefined) {
-    if (partnerVal) localStorage.setItem('partner_' + studentId, partnerVal);
-    else localStorage.removeItem('partner_' + studentId);
+    if (partnerVal) {
+      localStorage.setItem('partner_' + studentId, partnerVal);
+      localStorage.setItem('partner_' + partnerVal, studentId); // 雙向
+    } else {
+      localStorage.removeItem('partner_' + studentId);
+    }
   }
   const data = {
     id: currentStudent.id,
@@ -189,11 +193,16 @@ function sessionLabel(cls, payments) {
 async function load() {
   let students, classes, payments;
   try {
-    [students, classes, payments] = await Promise.all([
+    const partnerId = localStorage.getItem('partner_' + studentId) || '';
+    const reqs = [
       API.apiGet('getStudents'),
       API.apiGet('getClasses', { studentId }),
-      API.apiGet('getPayments', { studentId })
-    ]);
+      API.apiGet('getPayments', { studentId }),
+      partnerId ? API.apiGet('getClasses', { studentId: partnerId }) : Promise.resolve([])
+    ];
+    const [s0, s1, s2, s3] = await Promise.all(reqs);
+    [students, classes, payments] = [s0, s1, s2];
+    var partnerClasses = s3;
   } catch (e) {
     ['info-card', 'classes-card', 'payments-card'].forEach(id => {
       const el = document.getElementById(id);
@@ -280,13 +289,19 @@ async function load() {
 
   document.getElementById('payments-card').innerHTML = payments.length
     ? [...payments].sort((a, b) => String(a.date).localeCompare(String(b.date))).map(p => {
-        const used = classes.filter(c => c.payment_id === p.id).length;
-        const pct = Math.min(100, Math.round(used / Number(p.period_sessions) * 100));
+        const selfUsed = classes.filter(c => c.payment_id === p.id).length;
+        const partnerUsed = (partnerClasses || []).filter(c => c.payment_id === p.id).length;
+        const totalUsed = selfUsed + partnerUsed;
+        const pct = Math.min(100, Math.round(totalUsed / Number(p.period_sessions) * 100));
+        const partnerName = partnerUsed > 0 ? getPartnerName() : '';
+        const usedLabel = partnerUsed > 0
+          ? `${selfUsed}＋${partnerUsed}（${partnerName}）＝${totalUsed}／${p.period_sessions} 堂`
+          : `${totalUsed}／${p.period_sessions} 堂`;
         return `<div class="payment-period">
           <div class="card-row" style="padding:0 0 8px">
             <div>
-              <div class="card-value">${p.date} ${p.venue ? `· ${p.venue}` : ''}</div>
-              <div class="card-label">${p.package_name || ''} · ${used}／${p.period_sessions} 堂</div>
+              <div class="card-value">${String(p.date).slice(0,10)} ${p.venue ? `· ${p.venue}` : ''}</div>
+              <div class="card-label">${p.package_name || ''} · ${usedLabel}</div>
             </div>
             <div style="text-align:right">
               <div class="card-value">$${Number(p.paid_amount).toLocaleString()}</div>
