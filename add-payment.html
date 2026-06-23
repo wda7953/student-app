@@ -7,6 +7,21 @@
   <link rel="stylesheet" href="css/style.css">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#4A90D9">
+  <style>
+    .link-class-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-bottom: 1px solid #f2f2f7;
+    }
+    .link-class-row:last-child { border-bottom: none; }
+    .link-class-row input[type=checkbox] { width: 20px; height: 20px; flex-shrink: 0; accent-color: #4A90D9; }
+    .link-class-info { flex: 1; }
+    .link-class-date { font-size: 13px; color: #8e8e93; }
+    .link-class-content { font-size: 14px; font-weight: 600; margin-top: 2px; color: #1c1c1e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .link-hint { font-size: 13px; color: #8e8e93; padding: 10px 16px; text-align: center; }
+  </style>
 </head>
 <body>
   <div class="header">
@@ -17,7 +32,7 @@
   <form onsubmit="submitForm(event)" style="padding-top:16px">
     <div class="form-group">
       <label>場地</label>
-      <select id="venue">
+      <select id="venue" onchange="loadUnlinked()">
         <option value="武士">武士</option>
         <option value="柔力">柔力</option>
       </select>
@@ -46,13 +61,53 @@
       <label>備註</label>
       <input id="notes" type="text" placeholder="補充說明">
     </div>
-    <button type="submit" class="btn-primary">儲存</button>
+
+    <!-- 未連結課程選擇 -->
+    <div id="link-section" style="display:none">
+      <div class="section">連結舊課程（選填）</div>
+      <div id="unlinked-list" class="card"></div>
+      <div class="notice" style="margin-top:0">未勾選的課程不連結，此收款從下次新課開始計算。</div>
+    </div>
+
+    <button type="submit" class="btn-primary" style="margin-top:16px">儲存</button>
+    <div style="height:30px"></div>
   </form>
 
   <script src="js/api.js"></script>
   <script>
     const studentId = new URLSearchParams(location.search).get('id');
     document.getElementById('date').value = new Date().toISOString().split('T')[0];
+
+    let unlinkedClasses = [];
+
+    async function loadUnlinked() {
+      const venue = document.getElementById('venue').value;
+      const section = document.getElementById('link-section');
+      const list = document.getElementById('unlinked-list');
+      list.innerHTML = '<div class="link-hint">載入中…</div>';
+      section.style.display = 'block';
+
+      const classes = await API.apiGet('getClasses', { studentId });
+      unlinkedClasses = classes
+        .filter(c => c.venue === venue && !c.payment_id)
+        .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+
+      if (unlinkedClasses.length === 0) {
+        list.innerHTML = '<div class="link-hint">無未連結課程</div>';
+        return;
+      }
+
+      list.innerHTML = unlinkedClasses.map((c, i) => {
+        const preview = (c.content || '').replace(/\s*\/\s*/g, '、').slice(0, 30);
+        return `<div class="link-class-row">
+          <input type="checkbox" id="cls-${i}" value="${c.id}">
+          <label class="link-class-info" for="cls-${i}">
+            <div class="link-class-date">${c.date} · ${c.type || ''}</div>
+            <div class="link-class-content">${preview || '-'}</div>
+          </label>
+        </div>`;
+      }).join('');
+    }
 
     async function submitForm(e) {
       e.preventDefault();
@@ -75,24 +130,24 @@
         notes: document.getElementById('notes').value
       });
 
-      // 2. 自動補連未連結的課程（最多連到 period_sessions 堂）
+      // 2. 連結勾選的課程
       const paymentId = result?.id;
-      if (paymentId && sessions > 0) {
-        btn.textContent = '連結課程中…';
-        const allClasses = await API.apiGet('getClasses');
-        const unlinked = allClasses
-          .filter(c => c.student_id === studentId && c.venue === venue && !c.payment_id)
-          .sort((a, b) => a.date < b.date ? -1 : 1)
-          .slice(0, sessions);
-        if (unlinked.length > 0) {
-          await Promise.all(unlinked.map(c =>
-            API.apiPost('updateClass', { id: c.id, payment_id: paymentId })
+      if (paymentId) {
+        const checked = [...document.querySelectorAll('#unlinked-list input[type=checkbox]:checked')]
+          .map(el => el.value);
+        if (checked.length > 0) {
+          btn.textContent = '連結課程中…';
+          await Promise.all(checked.map(id =>
+            API.apiPost('updateClass', { id, payment_id: paymentId })
           ));
         }
       }
 
       history.back();
     }
+
+    // 頁面載入時先抓一次
+    loadUnlinked();
   </script>
 </body>
 </html>
