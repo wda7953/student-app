@@ -237,14 +237,17 @@ async function load() {
     </div>`;
   }
 
+  // 最新在最上：日期降冪排列
+  const classesDesc = [...classes].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+
   // 判斷是否有雙場地資料（重訓 + Pilates 在不同地點）
-  const wushuClasses  = classes.filter(c => c.venue === '武士');
-  const rouliClasses  = classes.filter(c => c.venue === '柔力');
+  const wushuClasses = classesDesc.filter(c => c.venue === '武士');
+  const rouliClasses = classesDesc.filter(c => c.venue === '柔力');
   const isDual = wushuClasses.length > 0 && rouliClasses.length > 0;
 
   // 單欄卡片（縱向或只有單場地）
-  document.getElementById('classes-card').innerHTML = classes.length
-    ? classes.map(c => renderClassItem(c, payments)).join('')
+  document.getElementById('classes-card').innerHTML = classesDesc.length
+    ? classesDesc.map(c => renderClassItem(c, payments)).join('')
     : '<div class="empty">尚無上課記錄</div>';
 
   // 雙欄分頁（橫向 iPad）
