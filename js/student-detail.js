@@ -109,7 +109,7 @@ function renderInfoView(s) {
       <span class="card-value">${partnerName || '-'}</span>
     </div>
     <div class="card-row">
-      <span class="card-label">備注</span>
+      <span class="card-label">備註</span>
       <span class="card-value">${s.notes || '-'}</span>
     </div>
     <div class="card-row" style="justify-content:flex-end;border-bottom:none">
@@ -152,7 +152,7 @@ function renderInfoEdit(s) {
       </select>
     </div>
     <div style="padding:12px 16px;border-bottom:1px solid #f2f2f7">
-      <div class="card-label" style="margin-bottom:6px">備注</div>
+      <div class="card-label" style="margin-bottom:6px">備註</div>
       <textarea id="edit-notes" class="edit-textarea">${s.notes || ''}</textarea>
     </div>
     <div class="card-row" style="justify-content:flex-end;border-bottom:none;gap:16px">
