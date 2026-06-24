@@ -316,31 +316,55 @@ async function load() {
     if (toggleBtn) toggleBtn.style.display = 'none';
   }
 
-  document.getElementById('payments-card').innerHTML = payments.length
-    ? [...payments].sort((a, b) => String(b.date).localeCompare(String(a.date))).map(p => {
-        const selfUsed = classes.filter(c => c.payment_id === p.id).length;
-        const partnerUsed = (partnerClasses || []).filter(c => c.payment_id === p.id).length;
-        const totalUsed = selfUsed + partnerUsed;
-        const pct = Math.min(100, Math.round(totalUsed / Number(p.period_sessions) * 100));
-        const partnerName = partnerUsed > 0 ? getPartnerName() : '';
-        const usedLabel = partnerUsed > 0
-          ? `${selfUsed}＋${partnerUsed}（${partnerName}）＝${totalUsed}／${p.period_sessions} 堂`
-          : `${totalUsed}／${p.period_sessions} 堂`;
-        return `<div class="payment-period venue-${p.venue || ''}">
-          <div class="card-row" style="padding:0 0 8px">
-            <div>
-              <div class="card-value">${localDate(p.date)} ${p.venue ? `· ${p.venue}` : ''}</div>
-              <div class="card-label">${p.package_name || ''} · ${usedLabel}</div>
-            </div>
-            <div style="text-align:right">
-              <div class="card-value">$${Number(p.paid_amount).toLocaleString()}</div>
-              <div class="card-label">共 $${Number(p.total_amount).toLocaleString()}</div>
-            </div>
-          </div>
-          <div class="payment-progress"><div class="payment-progress-bar" style="width:${pct}%"></div></div>
-        </div>`;
-      }).join('')
-    : '<div class="empty">尚無收款記錄</div>';
+  function renderPaymentItem(p) {
+    const selfUsed = classes.filter(c => c.payment_id === p.id).length;
+    const partnerUsed = (partnerClasses || []).filter(c => c.payment_id === p.id).length;
+    const totalUsed = selfUsed + partnerUsed;
+    const pct = Math.min(100, Math.round(totalUsed / Number(p.period_sessions) * 100));
+    const partnerName = partnerUsed > 0 ? getPartnerName() : '';
+    const usedLabel = partnerUsed > 0
+      ? `${selfUsed}＋${partnerUsed}（${partnerName}）＝${totalUsed}／${p.period_sessions} 堂`
+      : `${totalUsed}／${p.period_sessions} 堂`;
+    return `<div class="payment-period venue-${p.venue || ''}">
+      <div class="card-row" style="padding:0 0 8px">
+        <div>
+          <div class="card-value">${localDate(p.date)} ${p.venue ? `· ${p.venue}` : ''}</div>
+          <div class="card-label">${p.package_name || ''} · ${usedLabel}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="card-value">$${Number(p.paid_amount).toLocaleString()}</div>
+          <div class="card-label">共 $${Number(p.total_amount).toLocaleString()}</div>
+        </div>
+      </div>
+      <div class="payment-progress"><div class="payment-progress-bar" style="width:${pct}%"></div></div>
+    </div>`;
+  }
+
+  const sortedPayments = [...payments].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  const wushuPayments = sortedPayments.filter(p => p.venue === '武士');
+  const rouliPayments = sortedPayments.filter(p => p.venue === '柔力');
+  const hasBoth = wushuPayments.length > 0 && rouliPayments.length > 0;
+
+  if (hasBoth) {
+    document.getElementById('payments-card').classList.add('hidden');
+    const dual = document.getElementById('dual-payments');
+    dual.classList.remove('hidden');
+    dual.innerHTML = `
+      <div class="dual-view-col">
+        <div class="dual-view-col-title wushu">武士</div>
+        ${wushuPayments.map(renderPaymentItem).join('')}
+      </div>
+      <div class="dual-view-col">
+        <div class="dual-view-col-title pilates">柔力</div>
+        ${rouliPayments.map(renderPaymentItem).join('')}
+      </div>`;
+  } else {
+    document.getElementById('dual-payments').classList.add('hidden');
+    document.getElementById('payments-card').classList.remove('hidden');
+    document.getElementById('payments-card').innerHTML = sortedPayments.length
+      ? sortedPayments.map(renderPaymentItem).join('')
+      : '<div class="empty">尚無收款記錄</div>';
+  }
   } catch(e) {
     ['info-card', 'classes-card', 'payments-card'].forEach(id => {
       const el = document.getElementById(id);
