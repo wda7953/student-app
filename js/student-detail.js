@@ -260,15 +260,41 @@ async function load() {
   // 最新在最上：日期降冪排列
   const classesDesc = [...classes].sort((a, b) => String(b.date).localeCompare(String(a.date)));
 
+  // 按月份分組渲染，最新月份展開，其餘收合
+  function renderByMonth(classList, pmts) {
+    if (!classList.length) return '<div class="empty">尚無上課記錄</div>';
+    const groups = {};
+    classList.forEach(c => {
+      const key = localDate(c.date).slice(0, 7); // YYYY-MM
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(c);
+    });
+    const months = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+    return months.map((month, idx) => {
+      const [y, m] = month.split('-');
+      const label = `${y}年${Number(m)}月`;
+      const count = groups[month].length;
+      const isOpen = idx === 0;
+      const mid = 'mg_' + month + '_' + Math.random().toString(36).slice(2, 6);
+      return `<div class="month-group">
+        <div class="month-header" onclick="toggleMonth('${mid}')">
+          <span class="month-arrow">${isOpen ? '▼' : '▶'}</span>
+          <span>${label}（${count}堂）</span>
+        </div>
+        <div id="${mid}"${isOpen ? '' : ' class="hidden"'}>
+          ${groups[month].map(c => renderClassItem(c, pmts)).join('')}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
   // 判斷是否有雙場地資料（重訓 + Pilates 在不同地點）
   const wushuClasses = classesDesc.filter(c => c.venue === '武士');
   const rouliClasses = classesDesc.filter(c => c.venue === '柔力');
   const isDual = wushuClasses.length > 0 && rouliClasses.length > 0;
 
   // 單欄卡片（縱向或只有單場地）
-  document.getElementById('classes-card').innerHTML = classesDesc.length
-    ? classesDesc.map(c => renderClassItem(c, payments)).join('')
-    : '<div class="empty">尚無上課記錄</div>';
+  document.getElementById('classes-card').innerHTML = renderByMonth(classesDesc, payments);
 
   // 雙欄分頁（橫向 iPad）
   const dualEl = document.getElementById('dual-classes');
@@ -279,11 +305,11 @@ async function load() {
     dualEl.innerHTML = `
       <div class="dual-view-col">
         <div class="dual-view-col-title wushu">武士 重訓</div>
-        ${wushuClasses.length ? wushuClasses.map(c => renderClassItem(c, payments)).join('') : '<div class="empty">-</div>'}
+        ${wushuClasses.length ? renderByMonth(wushuClasses, payments) : '<div class="empty">-</div>'}
       </div>
       <div class="dual-view-col">
         <div class="dual-view-col-title pilates">柔力 Pilates</div>
-        ${rouliClasses.length ? rouliClasses.map(c => renderClassItem(c, payments)).join('') : '<div class="empty">-</div>'}
+        ${rouliClasses.length ? renderByMonth(rouliClasses, payments) : '<div class="empty">-</div>'}
       </div>`;
     // 預設：雙欄顯示、單欄隱藏
     dualEl.classList.remove('hidden');
@@ -382,4 +408,12 @@ async function confirmLink() {
   await API.apiPost('updateClass', { id: linkingClassId, payment_id: paymentId });
   closeLinkModal();
   load();
+}
+
+function toggleMonth(id) {
+  const body = document.getElementById(id);
+  if (!body) return;
+  const isHidden = body.classList.toggle("hidden");
+  const arrow = body.previousElementSibling.querySelector(".month-arrow");
+  if (arrow) arrow.textContent = isHidden ? "▶" : "▼";
 }
