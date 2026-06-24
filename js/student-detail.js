@@ -96,24 +96,12 @@ function renderInfoView(s) {
   const ledClass = s.status === 'active' ? 'led-green' : 'led-red';
   const partnerName = getPartnerName();
   return `
-    <div class="card-row">
-      <span class="card-label">狀態</span>
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;flex-wrap:wrap">
       <span class="status-led ${ledClass}"></span>
-    </div>
-    <div class="card-row">
-      <span class="card-label">地點</span>
-      <span class="card-value">${s.venue || '-'}</span>
-    </div>
-    <div class="card-row">
-      <span class="card-label">夥伴</span>
-      <span class="card-value">${partnerName || '-'}</span>
-    </div>
-    <div class="card-row">
-      <span class="card-label">備註</span>
-      <span class="card-value">${s.notes || '-'}</span>
-    </div>
-    <div class="card-row" style="justify-content:flex-end;border-bottom:none">
-      <button onclick="editInfo()" style="background:none;border:none;color:#4A90D9;font-size:14px;cursor:pointer;font-weight:600">編輯</button>
+      <span style="font-size:15px;font-weight:500">${s.venue || '-'}</span>
+      <span style="color:#8e8e93;font-size:14px">夥伴：<span style="color:#1c1c1e">${partnerName || '-'}</span></span>
+      <span style="color:#8e8e93;font-size:14px">備註：<span style="color:#1c1c1e">${s.notes || '-'}</span></span>
+      <button onclick="editInfo()" style="margin-left:auto;background:none;border:none;color:#4A90D9;font-size:14px;cursor:pointer;font-weight:600">編輯</button>
     </div>
   `;
 }
