@@ -297,7 +297,16 @@ async function load() {
   const toggleBtn = document.getElementById('toggle-view-btn');
 
   if (isDual && dualEl) {
-    dualEl.innerHTML = `
+    const firstIsRouli = s.venue === '柔力';
+    dualEl.innerHTML = firstIsRouli ? `
+      <div class="dual-view-col">
+        <div class="dual-view-col-title pilates">柔力 Pilates</div>
+        ${rouliClasses.length ? renderByMonth(rouliClasses, payments) : '<div class="empty">-</div>'}
+      </div>
+      <div class="dual-view-col">
+        <div class="dual-view-col-title wushu">武士 重訓</div>
+        ${wushuClasses.length ? renderByMonth(wushuClasses, payments) : '<div class="empty">-</div>'}
+      </div>` : `
       <div class="dual-view-col">
         <div class="dual-view-col-title wushu">武士 重訓</div>
         ${wushuClasses.length ? renderByMonth(wushuClasses, payments) : '<div class="empty">-</div>'}
@@ -340,6 +349,32 @@ async function load() {
     </div>`;
   }
 
+  function renderPaymentsByMonth(paymentList) {
+    if (!paymentList.length) return '<div class="empty">尚無收款記錄</div>';
+    const groups = {};
+    paymentList.forEach(p => {
+      const key = localDate(p.date).slice(0, 7);
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(p);
+    });
+    const months = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+    return months.map((month, idx) => {
+      const [y, m] = month.split('-');
+      const label = `${y}年${Number(m)}月`;
+      const isOpen = idx === 0;
+      const mid = 'pm_' + month + '_' + Math.random().toString(36).slice(2, 6);
+      return `<div class="month-group">
+        <div class="month-header" onclick="toggleMonth('${mid}')">
+          <span class="month-arrow">${isOpen ? '▼' : '▶'}</span>
+          <span>${label}（${groups[month].length}筆）</span>
+        </div>
+        <div id="${mid}"${isOpen ? '' : ' class="hidden"'}>
+          ${groups[month].map(renderPaymentItem).join('')}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
   const sortedPayments = [...payments].sort((a, b) => String(b.date).localeCompare(String(a.date)));
   const wushuPayments = sortedPayments.filter(p => p.venue === '武士');
   const rouliPayments = sortedPayments.filter(p => p.venue === '柔力');
@@ -349,21 +384,28 @@ async function load() {
     document.getElementById('payments-card').classList.add('hidden');
     const dual = document.getElementById('dual-payments');
     dual.classList.remove('hidden');
-    dual.innerHTML = `
+    const firstIsRouli = s.venue === '柔力';
+    dual.innerHTML = firstIsRouli ? `
+      <div class="dual-view-col">
+        <div class="dual-view-col-title pilates">柔力</div>
+        ${renderPaymentsByMonth(rouliPayments)}
+      </div>
       <div class="dual-view-col">
         <div class="dual-view-col-title wushu">武士</div>
-        ${wushuPayments.map(renderPaymentItem).join('')}
+        ${renderPaymentsByMonth(wushuPayments)}
+      </div>` : `
+      <div class="dual-view-col">
+        <div class="dual-view-col-title wushu">武士</div>
+        ${renderPaymentsByMonth(wushuPayments)}
       </div>
       <div class="dual-view-col">
         <div class="dual-view-col-title pilates">柔力</div>
-        ${rouliPayments.map(renderPaymentItem).join('')}
+        ${renderPaymentsByMonth(rouliPayments)}
       </div>`;
   } else {
     document.getElementById('dual-payments').classList.add('hidden');
     document.getElementById('payments-card').classList.remove('hidden');
-    document.getElementById('payments-card').innerHTML = sortedPayments.length
-      ? sortedPayments.map(renderPaymentItem).join('')
-      : '<div class="empty">尚無收款記錄</div>';
+    document.getElementById('payments-card').innerHTML = renderPaymentsByMonth(sortedPayments);
   }
   } catch(e) {
     ['info-card', 'classes-card', 'payments-card'].forEach(id => {
