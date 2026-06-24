@@ -322,7 +322,7 @@ async function load() {
   }
 
   document.getElementById('payments-card').innerHTML = payments.length
-    ? [...payments].sort((a, b) => String(a.date).localeCompare(String(b.date))).map(p => {
+    ? [...payments].sort((a, b) => String(b.date).localeCompare(String(a.date))).map(p => {
         const selfUsed = classes.filter(c => c.payment_id === p.id).length;
         const partnerUsed = (partnerClasses || []).filter(c => c.payment_id === p.id).length;
         const totalUsed = selfUsed + partnerUsed;
