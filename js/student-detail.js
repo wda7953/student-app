@@ -105,10 +105,6 @@ function renderInfoView(s) {
       <span class="card-label">地點</span>
       <span class="card-value">${s.venue || '-'}</span>
     </div>
-    <div class="card-row">
-      <span class="card-label">等級</span>
-      <span class="card-value">${s.level || '-'}</span>
-    </div>
     ${singleRate ? `<div class="card-row"><span class="card-label">單次費率</span><span class="card-value">$${Number(singleRate).toLocaleString()}</span></div>` : ''}
     ${partnerName ? `<div class="card-row"><span class="card-label">夥伴</span><span class="card-value">${partnerName}</span></div>` : ''}
     ${s.notes ? `<div class="card-row"><span class="card-label">備注</span><span class="card-value">${s.notes}</span></div>` : ''}
@@ -139,10 +135,6 @@ function renderInfoEdit(s) {
         <option value="武士" ${s.venue === '武士' ? 'selected' : ''}>武士</option>
         <option value="柔力" ${s.venue === '柔力' ? 'selected' : ''}>柔力</option>
       </select>
-    </div>
-    <div class="card-row">
-      <span class="card-label" style="flex-shrink:0">等級</span>
-      <input id="edit-level" value="${s.level || ''}" class="edit-input" placeholder="-">
     </div>
     <div class="card-row">
       <span class="card-label" style="flex-shrink:0">單次費率</span>
@@ -195,7 +187,6 @@ async function saveInfo() {
   const data = {
     id: currentStudent.id,
     venue: document.getElementById('edit-venue').value,
-    level: document.getElementById('edit-level').value,
     status: document.getElementById('edit-status').value,
     notes: document.getElementById('edit-notes').value
   };
