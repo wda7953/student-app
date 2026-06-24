@@ -16,7 +16,14 @@
     <button class="back-btn" onclick="location.href='add-student.html'" style="font-size:24px">＋</button>
   </div>
   <div class="search-bar">
-    <input type="search" id="search" placeholder="搜尋學員姓名" oninput="filterStudents(this.value)">
+    <input type="search" id="search" placeholder="搜尋學員姓名" oninput="applyFilter()">
+  </div>
+  <div id="filter-bar" style="display:flex;gap:8px;padding:10px 16px;overflow-x:auto;background:white;border-bottom:1px solid #e5e5ea">
+    <button class="filter-chip active" onclick="setFilter('全部')">全部</button>
+    <button class="filter-chip" onclick="setFilter('武士')">武士</button>
+    <button class="filter-chip" onclick="setFilter('柔力')">柔力</button>
+    <button class="filter-chip" onclick="setFilter('共課夥伴')">共課夥伴</button>
+    <button class="filter-chip" onclick="setFilter('單次')">單次</button>
   </div>
   <div class="section">在線</div>
   <ul class="student-list" id="active-list"><li class="student-item" style="color:#8e8e93">載入中…</li></ul>
