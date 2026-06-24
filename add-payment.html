@@ -88,6 +88,12 @@
     const now = new Date();
     document.getElementById('date').value = localDate(now);
 
+    // 依學員預設場地設定 venue
+    API.apiGet('getStudents').then(students => {
+      const s = students.find(s => s.id === studentId);
+      if (s?.venue) document.getElementById('venue').value = s.venue;
+    });
+
     let unlinkedClasses = [];
 
     async function loadUnlinked() {

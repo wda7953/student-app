@@ -379,6 +379,10 @@
     { const n = new Date(); document.getElementById('date').value = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; }
     buildCatTabs();
     onTypeChange();
+    API.apiGet('getStudents').then(students => {
+      const s = students.find(s => s.id === studentId);
+      if (s?.venue) { document.getElementById('venue').value = s.venue; checkActivePayment(); }
+    });
     checkActivePayment();
 
     // ── 類型切換 ──────────────────────────────────────
