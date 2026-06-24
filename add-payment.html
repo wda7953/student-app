@@ -88,11 +88,9 @@
     const now = new Date();
     document.getElementById('date').value = localDate(now);
 
-    // 依學員預設場地設定 venue
-    API.apiGet('getStudents').then(students => {
-      const s = students.find(s => s.id === studentId);
-      if (s?.venue) document.getElementById('venue').value = s.venue;
-    });
+    // 優先從 URL 讀預設地點（由學員資料頁帶入），不需等 API
+    const venueParam = new URLSearchParams(location.search).get('venue');
+    if (venueParam) { document.getElementById('venue').value = venueParam; loadUnlinked(); }
 
     let unlinkedClasses = [];
 

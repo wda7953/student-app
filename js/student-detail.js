@@ -63,8 +63,14 @@ function classTypeClass(type) {
   return 'type-重訓';
 }
 
-function goAddClass() { location.href = `add-class.html?id=${studentId}`; }
-function goAddPayment() { location.href = `add-payment.html?id=${studentId}`; }
+function goAddClass() {
+  const v = currentStudent?.venue || '';
+  location.href = `add-class.html?id=${studentId}${v ? '&venue=' + encodeURIComponent(v) : ''}`;
+}
+function goAddPayment() {
+  const v = currentStudent?.venue || '';
+  location.href = `add-payment.html?id=${studentId}${v ? '&venue=' + encodeURIComponent(v) : ''}`;
+}
 
 function toggleDualView() {
   const dual = document.getElementById('dual-classes');
