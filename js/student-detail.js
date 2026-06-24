@@ -95,6 +95,7 @@ function getPartnerName() {
 function renderInfoView(s) {
   const ledClass = s.status === 'active' ? 'led-green' : 'led-red';
   const partnerName = getPartnerName();
+  const singleRate = localStorage.getItem('single_rate_' + studentId);
   return `
     <div class="card-row">
       <span class="card-label">狀態</span>
@@ -108,6 +109,7 @@ function renderInfoView(s) {
       <span class="card-label">等級</span>
       <span class="card-value">${s.level || '-'}</span>
     </div>
+    ${singleRate ? `<div class="card-row"><span class="card-label">單次費率</span><span class="card-value">$${Number(singleRate).toLocaleString()}</span></div>` : ''}
     ${partnerName ? `<div class="card-row"><span class="card-label">夥伴</span><span class="card-value">${partnerName}</span></div>` : ''}
     ${s.notes ? `<div class="card-row"><span class="card-label">備注</span><span class="card-value">${s.notes}</span></div>` : ''}
     <div class="card-row" style="justify-content:flex-end;border-bottom:none">
@@ -143,6 +145,10 @@ function renderInfoEdit(s) {
       <input id="edit-level" value="${s.level || ''}" class="edit-input" placeholder="-">
     </div>
     <div class="card-row">
+      <span class="card-label" style="flex-shrink:0">單次費率</span>
+      <input id="edit-single-rate" value="${localStorage.getItem('single_rate_' + studentId) || ''}" class="edit-input" placeholder="無（填金額啟用）" style="text-align:right">
+    </div>
+    <div class="card-row">
       <span class="card-label" style="flex-shrink:0">夥伴</span>
       <select id="edit-partner" class="edit-select">
         <option value="">無</option>
@@ -171,6 +177,12 @@ function cancelEdit() {
 async function saveInfo() {
   const saveBtn = document.querySelector('[onclick="saveInfo()"]');
   if (saveBtn) saveBtn.textContent = '儲存中…';
+  const singleRateVal = document.getElementById('edit-single-rate')?.value.trim();
+  if (singleRateVal) {
+    localStorage.setItem('single_rate_' + studentId, singleRateVal);
+  } else {
+    localStorage.removeItem('single_rate_' + studentId);
+  }
   const partnerVal = document.getElementById('edit-partner')?.value;
   if (partnerVal !== undefined) {
     if (partnerVal) {

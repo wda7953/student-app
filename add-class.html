@@ -608,7 +608,17 @@
           const prefix = usingPartner ? '⇄ 使用夥伴付款　' : '';
           notice.innerHTML = `<div class="notice">${prefix}目前周期：${p.package_name || '未命名'} · 已上 ${active.used} 堂，本堂為第 <strong>${active.session_number}</strong> 堂／共 ${p.period_sessions} 堂</div>`;
         } else {
-          notice.innerHTML = `<div class="notice">⚠️ ${venue} 目前無有效付款周期，此堂將標示為「未連結」</div>`;
+          const rate = localStorage.getItem('single_rate_' + studentId);
+          if (rate) {
+            notice.innerHTML = `<div class="notice" style="display:flex;align-items:center;gap:10px">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                <input type="checkbox" id="single-charge-cb" checked style="width:18px;height:18px;accent-color:#4A90D9">
+                <span>本次收費 <strong>$${Number(rate).toLocaleString()}</strong>（單次）</span>
+              </label>
+            </div>`;
+          } else {
+            notice.innerHTML = `<div class="notice">⚠️ ${venue} 目前無有效付款周期，此堂將標示為「未連結」</div>`;
+          }
         }
       } catch(e) {
         notice.innerHTML = '';
@@ -649,8 +659,27 @@
         ]);
       } else {
         // 一對一：查自己的付款，無則抓夥伴的
-        const { active } = await getActivePaymentWithPartner(studentId, venue);
-        const paymentId = active?.payment?.id || '';
+        let { active } = await getActivePaymentWithPartner(studentId, venue);
+        let paymentId = active?.payment?.id || '';
+
+        // 若無付款包且勾選單次收費，先建付款再連結
+        if (!paymentId) {
+          const cb = document.getElementById('single-charge-cb');
+          const rate = localStorage.getItem('single_rate_' + studentId);
+          if (cb?.checked && rate) {
+            const pmtResult = await API.apiPost('addPayment', {
+              student_id: studentId,
+              venue: payload.venue,
+              date: payload.date,
+              package_name: '單次',
+              period_sessions: 1,
+              total_amount: Number(rate),
+              paid_amount: Number(rate)
+            });
+            paymentId = pmtResult.id || '';
+          }
+        }
+
         await API.apiPost('addClass', { ...payload, student_id: studentId, payment_id: paymentId });
       }
 
