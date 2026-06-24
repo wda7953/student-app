@@ -610,10 +610,10 @@
         } else {
           const rate = localStorage.getItem('single_rate_' + studentId);
           if (rate) {
-            notice.innerHTML = `<div class="notice" style="display:flex;align-items:center;gap:10px">
+            notice.innerHTML = `<div class="notice" style="display:flex;align-items:center;gap:10px;background:#fff2f2;border-left:3px solid #ff3b30">
               <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
-                <input type="checkbox" id="single-charge-cb" checked style="width:18px;height:18px;accent-color:#4A90D9">
-                <span>本次收費 <strong>$${Number(rate).toLocaleString()}</strong>（單次）</span>
+                <input type="checkbox" id="single-charge-cb" checked style="width:18px;height:18px;accent-color:#ff3b30">
+                <span style="color:#ff3b30;font-weight:600">本次收費 $${Number(rate).toLocaleString()}（單次）</span>
               </label>
             </div>`;
           } else {
