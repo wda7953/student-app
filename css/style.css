@@ -58,6 +58,8 @@ form { padding: 0 20px; }
 #classes-card.hidden { display: none; }
 .payment-period { padding: 12px 16px; border-bottom: 1px solid #f2f2f7; }
 .payment-period:last-child { border-bottom: none; }
+.payment-period.venue-武士 { border-left: 4px solid #B5AeC4; }
+.payment-period.venue-柔力 { border-left: 4px solid #E8A5B1; }
 .payment-progress { height: 4px; background: #e5e5ea; border-radius: 2px; margin-top: 8px; }
 .payment-progress-bar { height: 4px; background: #4A90D9; border-radius: 2px; }
 .empty { text-align: center; padding: 40px 20px; color: #8e8e93; }

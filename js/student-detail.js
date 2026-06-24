@@ -334,7 +334,7 @@ async function load() {
         const usedLabel = partnerUsed > 0
           ? `${selfUsed}＋${partnerUsed}（${partnerName}）＝${totalUsed}／${p.period_sessions} 堂`
           : `${totalUsed}／${p.period_sessions} 堂`;
-        return `<div class="payment-period">
+        return `<div class="payment-period venue-${p.venue || ''}">
           <div class="card-row" style="padding:0 0 8px">
             <div>
               <div class="card-value">${localDate(p.date)} ${p.venue ? `· ${p.venue}` : ''}</div>
