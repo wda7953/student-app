@@ -99,7 +99,7 @@ function renderInfoView(s) {
     <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;flex-wrap:wrap">
       <span class="status-led ${ledClass}"></span>
       <span style="font-size:15px;font-weight:500">${s.venue || '-'}</span>
-      <span style="color:#8e8e93;font-size:14px">夥伴：<span style="color:#1c1c1e">${partnerName || '-'}</span></span>
+      <span style="color:#8e8e93;font-size:14px">共課夥伴：<span style="color:#1c1c1e">${partnerName || '-'}</span></span>
       <span style="color:#8e8e93;font-size:14px">備註：<span style="color:#1c1c1e">${s.notes || '-'}</span></span>
       <button onclick="editInfo()" style="margin-left:auto;background:none;border:none;color:#4A90D9;font-size:14px;cursor:pointer;font-weight:600">編輯</button>
     </div>
@@ -122,7 +122,7 @@ function renderInfoEdit(s) {
       </select>
     </div>
     <div class="card-row">
-      <span class="card-label" style="flex-shrink:0">地點</span>
+      <span class="card-label" style="flex-shrink:0">預設地點</span>
       <select id="edit-venue" class="edit-select">
         <option value="武士" ${s.venue === '武士' ? 'selected' : ''}>武士</option>
         <option value="柔力" ${s.venue === '柔力' ? 'selected' : ''}>柔力</option>
@@ -133,7 +133,7 @@ function renderInfoEdit(s) {
       <input id="edit-single-rate" value="${localStorage.getItem('single_rate_' + studentId) || ''}" class="edit-input" placeholder="無（填金額啟用）" style="text-align:right">
     </div>
     <div class="card-row">
-      <span class="card-label" style="flex-shrink:0">夥伴</span>
+      <span class="card-label" style="flex-shrink:0">共課夥伴</span>
       <select id="edit-partner" class="edit-select">
         <option value="">無</option>
         ${partnerOptions}
