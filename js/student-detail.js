@@ -251,7 +251,10 @@ async function load() {
     return `<div class="class-item ${classTypeClass(c.type)}">
       <div class="class-date-row">
         <span>${dateStr}${c.notes ? ' · ' + escHtml(c.notes) : ''}</span>
-        <span>${c.venue || ''} · ${c.type || ''}</span>
+        <span style="display:flex;align-items:center;gap:8px">
+          <span>${c.venue || ''} · ${c.type || ''}</span>
+          <button onclick="deleteClassItem('${c.id}')" style="background:none;border:none;color:#c7c7cc;font-size:15px;cursor:pointer;padding:0;line-height:1" title="刪除">🗑</button>
+        </span>
       </div>
       <div class="class-content">${formatContent(c.content)}</div>
       <div style="margin-top:6px">${sessionTag}${extraTag}</div>
@@ -483,4 +486,10 @@ function toggleMonth(id) {
   const isHidden = body.classList.toggle("hidden");
   const arrow = body.previousElementSibling.querySelector(".month-arrow");
   if (arrow) arrow.textContent = isHidden ? "▶" : "▼";
+}
+
+async function deleteClassItem(classId) {
+  if (!confirm('確定刪除這筆上課記錄？')) return;
+  await API.apiPost('deleteClass', { id: classId });
+  load();
 }
