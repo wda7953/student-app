@@ -1,3 +1,6 @@
+const SVG_EDIT = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+const SVG_TRASH = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>`;
+
 const studentId = new URLSearchParams(location.search).get('id');
 
 // 將日期轉為本地 YYYY-MM-DD，避免 UTC 時區差 -1 天
@@ -253,7 +256,8 @@ async function load() {
         <span>${dateStr}${c.notes ? ' · ' + escHtml(c.notes) : ''}</span>
         <span style="display:flex;align-items:center;gap:8px">
           <span>${c.venue || ''} · ${c.type || ''}</span>
-          <button onclick="deleteClassItem('${c.id}')" style="background:none;border:none;color:#c7c7cc;font-size:15px;cursor:pointer;padding:0;line-height:1" title="刪除">🗑</button>
+          <button onclick="editClassItem('${c.id}')" style="background:none;border:none;color:#4A90D9;cursor:pointer;padding:0;line-height:1" title="編輯">${SVG_EDIT}</button>
+          <button onclick="deleteClassItem('${c.id}')" style="background:none;border:none;color:#c7c7cc;cursor:pointer;padding:0;line-height:1" title="刪除">${SVG_TRASH}</button>
         </span>
       </div>
       <div class="class-content">${formatContent(c.content)}</div>
@@ -492,4 +496,8 @@ async function deleteClassItem(classId) {
   if (!confirm('確定刪除這筆上課記錄？')) return;
   await API.apiPost('deleteClass', { id: classId });
   load();
+}
+
+function editClassItem(classId) {
+  location.href = `add-class.html?edit=${classId}&id=${studentId}`;
 }
