@@ -9,8 +9,10 @@ async function loadStudents() {
   ]);
 
   classes.forEach(c => {
-    if (!lastClassMap[c.student_id] || c.date > lastClassMap[c.student_id]) {
-      lastClassMap[c.student_id] = c.date;
+    const d = new Date(c.date);
+    const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    if (!lastClassMap[c.student_id] || ds > lastClassMap[c.student_id]) {
+      lastClassMap[c.student_id] = ds;
     }
   });
 
