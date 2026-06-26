@@ -354,6 +354,7 @@
 
     // ── 狀態 ─────────────────────────────────────────
     const studentId = new URLSearchParams(location.search).get('id');
+    const editId = new URLSearchParams(location.search).get('edit');
 
     // 載入學員清單供一對二選擇
     API.apiGet('getStudents').then(students => {
@@ -381,11 +382,12 @@
     onTypeChange();
     // 優先從 URL 讀預設地點（由學員資料頁帶入），不需等 API
     const venueParam = new URLSearchParams(location.search).get('venue');
-    if (venueParam) document.getElementById('venue').value = venueParam;
-    checkActivePayment();
+    if (venueParam && !editId) document.getElementById('venue').value = venueParam;
+    if (!editId) checkActivePayment();
 
     // ── 類型切換 ──────────────────────────────────────
     function onTypeChange() {
+      if (editId) return;
       const type = document.getElementById('type').value;
       const showP = type === 'Pilates' || type === '重訓+Pilates';
       const showW = type === '重訓' || type === '重訓+Pilates';
@@ -634,6 +636,20 @@
       btn.textContent = '儲存中…';
       btn.disabled = true;
 
+      if (editId) {
+        await API.apiPost('updateClass', {
+          id: editId,
+          date: document.getElementById('date').value,
+          venue: document.getElementById('venue').value,
+          type: document.getElementById('type').value,
+          content: document.getElementById('content').value,
+          notes: document.getElementById('notes').value,
+          payment_id: document.getElementById('edit-payment-sel')?.value || ''
+        });
+        history.back();
+        return;
+      }
+
       const payload = {
         date: document.getElementById('date').value,
         venue: document.getElementById('venue').value,
@@ -686,6 +702,36 @@
       }
 
       history.back();
+    }
+    if (editId) initEditMode();
+
+    async function initEditMode() {
+      document.querySelector('.header span:nth-child(2)').textContent = '編輯上課記錄';
+      document.querySelector('.btn-primary').textContent = '儲存變更';
+      document.getElementById('pilates-template').classList.add('hidden');
+      document.getElementById('weights-template').classList.add('hidden');
+      document.getElementById('extra_charge').closest('.form-group').style.display = 'none';
+      document.getElementById('partner').parentElement.style.display = 'none';
+
+      const classes = await API.apiGet('getClasses', { studentId });
+      const cls = classes.find(c => c.id === editId);
+      if (!cls) { alert('找不到上課記錄'); history.back(); return; }
+
+      document.getElementById('date').value = String(cls.date).slice(0, 10);
+      document.getElementById('venue').value = cls.venue || '武士';
+      document.getElementById('type').value = cls.type || '重訓';
+      document.getElementById('content').value = cls.content || '';
+      document.getElementById('notes').value = cls.notes || '';
+
+      const payments = await API.apiGet('getPayments', { studentId });
+      const opts = [
+        '<option value="">無連結</option>',
+        ...payments
+          .sort((a, b) => String(b.date).localeCompare(String(a.date)))
+          .map(p => `<option value="${p.id}" ${p.id === cls.payment_id ? 'selected' : ''}>${String(p.date).slice(0, 10)} ${p.package_name || ''} (${p.period_sessions}堂)</option>`)
+      ].join('');
+      document.getElementById('session-notice').innerHTML =
+        `<div class="form-group" style="padding-top:0"><label>連結付款</label><select id="edit-payment-sel" style="border:1px solid #e5e5ea;border-radius:8px;padding:10px 12px;font-size:15px;width:100%;background:white;color:#1c1c1e">${opts}</select></div>`;
     }
   </script>
 </body>
