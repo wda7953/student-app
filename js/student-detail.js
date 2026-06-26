@@ -353,7 +353,8 @@ async function load() {
           <div class="card-value">${localDate(p.date)} ${p.venue ? `· ${p.venue}` : ''}</div>
           <div class="card-label">${p.package_name || ''} · ${usedLabel}</div>
         </div>
-        <div style="text-align:right">
+        <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <button onclick="editPaymentItem('${p.id}')" style="background:none;border:none;color:#4A90D9;cursor:pointer;padding:0;line-height:1" title="編輯">${SVG_EDIT}</button>
           <div class="card-value">$${Number(p.paid_amount).toLocaleString()}</div>
           <div class="card-label">共 $${Number(p.total_amount).toLocaleString()}</div>
         </div>
@@ -500,4 +501,8 @@ async function deleteClassItem(classId) {
 
 function editClassItem(classId) {
   location.href = `add-class.html?edit=${classId}&id=${studentId}`;
+}
+
+function editPaymentItem(paymentId) {
+  location.href = `add-payment.html?edit=${paymentId}&id=${studentId}`;
 }
