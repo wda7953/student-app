@@ -1,11 +1,11 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, sans-serif; background: #f2f2f7; color: #1c1c1e; }
+body { font-family: -apple-system, sans-serif; background: #FAF7F2; color: #1c1c1e; }
 .header { background: #7A5C3E; color: white; padding: 16px 20px; font-size: 20px; font-weight: 600; position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; }
 .search-bar { padding: 10px 16px; background: white; border-bottom: 1px solid #e5e5ea; }
-.search-bar input { width: 100%; padding: 8px 12px; border-radius: 10px; border: none; background: #f2f2f7; font-size: 16px; }
+.search-bar input { width: 100%; padding: 8px 12px; border-radius: 10px; border: none; background: #FAF7F2; font-size: 16px; }
 .student-list { list-style: none; }
 .student-item { background: white; border-bottom: 1px solid #e5e5ea; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-.student-item:active { background: #f2f2f7; }
+.student-item:active { background: #FAF7F2; }
 .student-name { font-size: 17px; font-weight: 500; }
 .student-meta { font-size: 13px; color: #8e8e93; margin-top: 3px; }
 .badge { font-size: 12px; padding: 3px 8px; border-radius: 12px; font-weight: 600; }
@@ -66,7 +66,7 @@ form { padding: 0 20px; }
 .notice { background: #fff9e6; border-left: 3px solid #f5c518; padding: 10px 14px; margin: 12px 20px; border-radius: 6px; font-size: 14px; color: #7a6000; }
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: flex; align-items: flex-end; }
 .modal-overlay.hidden { display: none; }
-.modal-box { background: #f2f2f7; border-radius: 16px 16px 0 0; width: 100%; padding: 20px; max-height: 75vh; overflow-y: auto; }
+.modal-box { background: #FAF7F2; border-radius: 16px 16px 0 0; width: 100%; padding: 20px; max-height: 75vh; overflow-y: auto; }
 .link-payment-row { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid #f2f2f7; background: white; cursor: pointer; }
 .link-payment-row:first-child { border-radius: 12px 12px 0 0; }
 .link-payment-row:last-child { border-bottom: none; border-radius: 0 0 12px 12px; }
