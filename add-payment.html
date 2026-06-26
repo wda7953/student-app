@@ -76,6 +76,7 @@
   <script src="js/api.js"></script>
   <script>
     const studentId = new URLSearchParams(location.search).get('id');
+    const editId = new URLSearchParams(location.search).get('edit');
 
     function localDate(val) {
       const d = new Date(val);
@@ -95,6 +96,7 @@
     let unlinkedClasses = [];
 
     async function loadUnlinked() {
+      if (editId) return;
       const venue = document.getElementById('venue').value;
       const section = document.getElementById('link-section');
       const list = document.getElementById('unlinked-list');
@@ -129,6 +131,21 @@
       btn.textContent = '儲存中…';
       btn.disabled = true;
 
+      if (editId) {
+        await API.apiPost('updatePayment', {
+          id: editId,
+          venue: document.getElementById('venue').value,
+          package_name: document.getElementById('package_name').value,
+          date: document.getElementById('date').value,
+          period_sessions: Number(document.getElementById('sessions').value),
+          total_amount: Number(document.getElementById('total').value) || 0,
+          paid_amount: Number(document.getElementById('paid').value) || 0,
+          notes: document.getElementById('notes').value
+        });
+        history.back();
+        return;
+      }
+
       const venue = document.getElementById('venue').value;
       const sessions = Number(document.getElementById('sessions').value);
 
@@ -161,7 +178,27 @@
     }
 
     // 頁面載入時先抓一次
-    loadUnlinked();
+    if (!editId) loadUnlinked();
+
+    if (editId) initEditMode();
+
+    async function initEditMode() {
+      document.querySelector('.header span:nth-child(2)').textContent = '編輯收款記錄';
+      document.querySelector('.btn-primary').textContent = '儲存變更';
+      document.getElementById('link-section').style.display = 'none';
+
+      const payments = await API.apiGet('getPayments', { studentId });
+      const p = payments.find(p => p.id === editId);
+      if (!p) { alert('找不到收款記錄'); history.back(); return; }
+
+      document.getElementById('venue').value = p.venue || '武士';
+      document.getElementById('package_name').value = p.package_name || '';
+      document.getElementById('date').value = String(p.date).slice(0, 10);
+      document.getElementById('sessions').value = p.period_sessions || '';
+      document.getElementById('total').value = p.total_amount || '';
+      document.getElementById('paid').value = p.paid_amount || '';
+      document.getElementById('notes').value = p.notes || '';
+    }
   </script>
 </body>
 </html>
