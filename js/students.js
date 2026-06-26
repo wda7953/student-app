@@ -71,7 +71,7 @@ function studentRow(s) {
   const tags = [
     hasPartner ? '共課' : null,
     hasRate ? '單次' : null
-  ].filter(Boolean).map(t => `<span style="font-size:11px;padding:1px 5px;border-radius:8px;background:#EDE5D8;color:#7A5C3E;font-weight:600">${t}</span>`).join(' ');
+  ].filter(Boolean).map(t => `<span style="font-size:11px;padding:1px 5px;border-radius:8px;background:#EDE5D8;color:#4A3728;font-weight:600">${t}</span>`).join(' ');
   return `<li class="student-item" onclick="location.href='student.html?id=${s.id}'">
     <div>
       <div class="student-name">${s.name} ${tags}</div>
