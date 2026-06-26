@@ -193,7 +193,7 @@
 
       document.getElementById('venue').value = p.venue || '武士';
       document.getElementById('package_name').value = p.package_name || '';
-      document.getElementById('date').value = String(p.date).slice(0, 10);
+      document.getElementById('date').value = localDate(p.date);
       document.getElementById('sessions').value = p.period_sessions || '';
       document.getElementById('total').value = p.total_amount || '';
       document.getElementById('paid').value = p.paid_amount || '';

@@ -717,7 +717,8 @@
       const cls = classes.find(c => c.id === editId);
       if (!cls) { alert('找不到上課記錄'); history.back(); return; }
 
-      document.getElementById('date').value = String(cls.date).slice(0, 10);
+      const _cd = new Date(cls.date);
+      document.getElementById('date').value = `${_cd.getFullYear()}-${String(_cd.getMonth()+1).padStart(2,'0')}-${String(_cd.getDate()).padStart(2,'0')}`;
       document.getElementById('venue').value = cls.venue || '武士';
       document.getElementById('type').value = cls.type || '重訓';
       document.getElementById('content').value = cls.content || '';
@@ -728,7 +729,7 @@
         '<option value="">無連結</option>',
         ...payments
           .sort((a, b) => String(b.date).localeCompare(String(a.date)))
-          .map(p => `<option value="${p.id}" ${p.id === cls.payment_id ? 'selected' : ''}>${String(p.date).slice(0, 10)} ${p.package_name || ''} (${p.period_sessions}堂)</option>`)
+          .map(p => { const _pd = new Date(p.date); const _ds = `${_pd.getFullYear()}-${String(_pd.getMonth()+1).padStart(2,'0')}-${String(_pd.getDate()).padStart(2,'0')}`; return `<option value="${p.id}" ${p.id === cls.payment_id ? 'selected' : ''}>${_ds} ${p.package_name || ''} (${p.period_sessions}堂)</option>`; })
       ].join('');
       document.getElementById('session-notice').innerHTML =
         `<div class="form-group" style="padding-top:0"><label>連結付款</label><select id="edit-payment-sel" style="border:1px solid #e5e5ea;border-radius:8px;padding:10px 12px;font-size:15px;width:100%;background:white;color:#1c1c1e">${opts}</select></div>`;
