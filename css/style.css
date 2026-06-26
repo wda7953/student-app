@@ -11,14 +11,14 @@ body { font-family: -apple-system, sans-serif; background: #FAF7F2; color: #1c1c
 .badge { font-size: 12px; padding: 3px 8px; border-radius: 12px; font-weight: 600; }
 .badge-active { background: #EDE5D8; color: #7A5C3E; }
 .badge-inactive { background: #f5f5f5; color: #8e8e93; }
-.fab { position: fixed; bottom: 30px; right: 24px; width: 56px; height: 56px; border-radius: 28px; background: #d6cbbf; color: white; border: none; font-size: 28px; cursor: pointer; box-shadow: 0 4px 12px rgba(122,92,62,0.4); display: flex; align-items: center; justify-content: center; }
+.fab { position: fixed; bottom: 30px; right: 24px; width: 56px; height: 56px; border-radius: 28px; background: #d6cbbf; color: #4A3728; border: none; font-size: 28px; cursor: pointer; box-shadow: 0 4px 12px rgba(122,92,62,0.4); display: flex; align-items: center; justify-content: center; }
 .section { padding: 16px 20px 8px; font-size: 13px; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px; }
 form { padding: 0 20px; }
 .form-group { background: white; border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
 .form-group label { display: block; padding: 12px 16px 4px; font-size: 13px; color: #8e8e93; }
 .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 16px 14px; border: none; font-size: 16px; background: transparent; outline: none; }
 .form-group textarea { height: 100px; resize: none; }
-.btn-primary { width: 100%; padding: 16px; background: #d6cbbf; color: white; border: none; border-radius: 12px; font-size: 17px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+.btn-primary { width: 100%; padding: 16px; background: #d6cbbf; color: #4A3728; border: none; border-radius: 12px; font-size: 17px; font-weight: 600; cursor: pointer; margin-top: 8px; }
 .back-btn { background: none; border: none; color: #4A3728; font-size: 16px; cursor: pointer; }
 .card { background: white; border-radius: 12px; margin: 12px 20px; overflow: hidden; }
 .card-row { padding: 12px 16px; border-bottom: 1px solid #f2f2f7; display: flex; justify-content: space-between; align-items: center; }

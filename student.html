@@ -19,8 +19,8 @@
   <div class="section">
     上課記錄
     <span style="float:right;display:flex;gap:8px;align-items:center">
-      <button id="toggle-view-btn" onclick="toggleDualView()" style="display:none;background:none;border:1px solid #4A90D9;color:#4A90D9;font-size:12px;padding:2px 8px;border-radius:8px;cursor:pointer;font-weight:600">單欄</button>
-      <button onclick="goAddClass()" style="background:none;border:none;color:#4A90D9;font-size:14px;cursor:pointer;font-weight:600">＋ 新增</button>
+      <button id="toggle-view-btn" onclick="toggleDualView()" style="display:none;background:none;border:1px solid #d6cbbf;color:#d6cbbf;font-size:12px;padding:2px 8px;border-radius:8px;cursor:pointer;font-weight:600">單欄</button>
+      <button onclick="goAddClass()" style="background:none;border:none;color:#d6cbbf;font-size:14px;cursor:pointer;font-weight:600">＋ 新增</button>
     </span>
   </div>
   <!-- 單欄（預設隱藏，切換後顯示）-->
@@ -29,7 +29,7 @@
   <div class="card dual-view-container hidden" id="dual-classes"></div>
   <div class="section">
     收款紀錄
-    <button onclick="goAddPayment()" style="float:right;background:none;border:none;color:#4A90D9;font-size:14px;cursor:pointer;font-weight:600">＋ 新增</button>
+    <button onclick="goAddPayment()" style="float:right;background:none;border:none;color:#d6cbbf;font-size:14px;cursor:pointer;font-weight:600">＋ 新增</button>
   </div>
   <div class="card" id="payments-card"><div class="empty">載入中…</div></div>
   <div class="card dual-view-container hidden" id="dual-payments"></div>
@@ -45,7 +45,7 @@
       <div id="link-payments-list" style="max-height:240px;overflow-y:auto;border-radius:12px;margin-bottom:16px"></div>
       <div style="display:flex;gap:12px">
         <button onclick="closeLinkModal()" style="flex:1;padding:14px;background:#f2f2f7;border:none;border-radius:12px;font-size:16px;cursor:pointer">取消</button>
-        <button onclick="confirmLink()" style="flex:1;padding:14px;background:#4A90D9;color:white;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer">連結</button>
+        <button onclick="confirmLink()" style="flex:1;padding:14px;background:#d6cbbf;color:white;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer">連結</button>
       </div>
     </div>
   </div>
