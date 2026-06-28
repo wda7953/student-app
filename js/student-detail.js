@@ -311,19 +311,15 @@ async function load() {
     const firstIsRouli = s.venue === '柔力';
     dualEl.innerHTML = firstIsRouli ? `
       <div class="dual-view-col">
-        <div class="dual-view-col-title pilates">柔力 Pilates</div>
         ${rouliClasses.length ? renderByMonth(rouliClasses, payments) : '<div class="empty">-</div>'}
       </div>
       <div class="dual-view-col">
-        <div class="dual-view-col-title wushu">武士 重訓</div>
         ${wushuClasses.length ? renderByMonth(wushuClasses, payments) : '<div class="empty">-</div>'}
       </div>` : `
       <div class="dual-view-col">
-        <div class="dual-view-col-title wushu">武士 重訓</div>
         ${wushuClasses.length ? renderByMonth(wushuClasses, payments) : '<div class="empty">-</div>'}
       </div>
       <div class="dual-view-col">
-        <div class="dual-view-col-title pilates">柔力 Pilates</div>
         ${rouliClasses.length ? renderByMonth(rouliClasses, payments) : '<div class="empty">-</div>'}
       </div>`;
     // 預設：雙欄顯示、單欄隱藏
