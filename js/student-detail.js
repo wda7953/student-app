@@ -459,17 +459,31 @@ async function loadLinkPayments() {
   const list = document.getElementById('link-payments-list');
   if (!targetId) { list.innerHTML = ''; return; }
   list.innerHTML = '<div class="empty">載入中…</div>';
-  const payments = await API.apiGet('getPayments', { studentId: targetId });
+  const [payments, targetClasses] = await Promise.all([
+    API.apiGet('getPayments', { studentId: targetId }),
+    API.apiGet('getClasses', { studentId: targetId })
+  ]);
   if (!payments.length) { list.innerHTML = '<div class="empty">無收款記錄</div>'; return; }
-  list.innerHTML = payments
-    .sort((a, b) => String(b.date).localeCompare(String(a.date)))
-    .map((p, i) => `<label class="link-payment-row">
+
+  const usedMap = {};
+  targetClasses.forEach(c => { if (c.payment_id) usedMap[c.payment_id] = (usedMap[c.payment_id] || 0) + 1; });
+
+  const active = payments
+    .filter(p => (usedMap[p.id] || 0) < Number(p.period_sessions))
+    .sort((a, b) => String(b.date).localeCompare(String(a.date)));
+
+  if (!active.length) { list.innerHTML = '<div class="empty">無未完成的付款週期</div>'; return; }
+
+  list.innerHTML = active.map((p, i) => {
+    const remaining = Number(p.period_sessions) - (usedMap[p.id] || 0);
+    return `<label class="link-payment-row">
       <input type="radio" name="link-payment" value="${p.id}" ${i === 0 ? 'checked' : ''}>
       <div>
         <div class="card-value">${localDate(p.date)} ${p.package_name || ''}</div>
-        <div class="card-label">${p.period_sessions} 堂 · $${Number(p.paid_amount).toLocaleString()}</div>
+        <div class="card-label">剩 ${remaining}/${p.period_sessions} 堂 · $${Number(p.paid_amount).toLocaleString()}</div>
       </div>
-    </label>`).join('');
+    </label>`;
+  }).join('');
 }
 
 function closeLinkModal() {
