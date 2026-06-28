@@ -38,9 +38,7 @@ function formatContent(content) {
       if (section.startsWith('初級：')) { label = '初級'; items = section.slice(3); }
       else if (section.startsWith('中級：')) { label = '中級'; items = section.slice(3); }
       const rows = items.split(' / ').map(renderRow).join('');
-      const badge = label === '初級'
-        ? `<span class="level-label level-beginner">初級</span>`
-        : `<span class="level-label level-advanced">中級</span>`;
+      const badge = `<span class="level-label level-beginner">${label}</span>`;
       return label ? `<div class="content-level-header">${badge}</div>${rows}` : rows;
     }).join('');
   }
@@ -243,25 +241,25 @@ async function load() {
 
   function renderClassItem(c, payments) {
     const p = c.payment_id ? payments.find(p => p.id === c.payment_id) : null;
-    const sessionTag = !c.payment_id
-      ? `<span class="session-tag" style="background:#f5f5f5;color:#8e8e93;cursor:pointer" onclick="openLinkModal('${c.id}')">未連結 · 連結▸</span>`
+    const sessionInfo = !c.payment_id
+      ? `<span class="unlink-tag" onclick="openLinkModal('${c.id}')">未連結 · 連結▸</span>`
       : p
-        ? `<span class="session-tag">第${c._session_number}堂／${p.period_sessions}堂 ${p.package_name || ''}</span>`
-        : `<span class="session-tag" style="background:#e8f5e9;color:#2e7d32">已連結（共用）</span>`;
+        ? `<span class="header-session">第${c._session_number}堂／${p.period_sessions}堂</span>`
+        : `<span class="header-session">已連結（共用）</span>`;
     const extraTag = Number(c.extra_charge) > 0
       ? `<span class="extra-charge-tag">+$${Number(c.extra_charge).toLocaleString()}</span>` : '';
     const dateStr = localDate(c.date);
-    return `<div class="class-item ${classTypeClass(c.type)}">
-      <div class="class-date-row">
-        <span>${dateStr}${c.notes ? ' · ' + escHtml(c.notes) : ''}</span>
-        <span style="display:flex;align-items:center;gap:8px">
-          <span>${c.venue || ''} · ${c.type || ''}</span>
-          <button onclick="editClassItem('${c.id}')" style="background:none;border:none;color:#4A90D9;cursor:pointer;padding:0;line-height:1" title="編輯">${SVG_EDIT}</button>
+    const headerClass = c.type === 'Pilates' ? 'class-header-pilates' : 'class-header-wushu';
+    return `<div class="class-item">
+      <div class="class-header ${headerClass}">
+        <span class="header-date">${dateStr}${c.notes ? ' · ' + escHtml(c.notes) : ''}</span>
+        <span style="display:flex;align-items:center;gap:6px">
+          ${sessionInfo}${extraTag}
+          <button onclick="editClassItem('${c.id}')" style="background:none;border:none;color:#8e8e93;cursor:pointer;padding:0;line-height:1" title="編輯">${SVG_EDIT}</button>
           <button onclick="deleteClassItem('${c.id}')" style="background:none;border:none;color:#c7c7cc;cursor:pointer;padding:0;line-height:1" title="刪除">${SVG_TRASH}</button>
         </span>
       </div>
-      <div class="class-content">${formatContent(c.content)}</div>
-      <div style="margin-top:6px">${sessionTag}${extraTag}</div>
+      <div class="class-body"><div class="class-content">${formatContent(c.content)}</div></div>
     </div>`;
   }
 
@@ -342,24 +340,32 @@ async function load() {
     const selfUsed = classes.filter(c => c.payment_id === p.id).length;
     const partnerUsed = (partnerClasses || []).filter(c => c.payment_id === p.id).length;
     const totalUsed = selfUsed + partnerUsed;
-    const pct = Math.min(100, Math.round(totalUsed / Number(p.period_sessions) * 100));
+    const total = Number(p.period_sessions);
     const partnerName = partnerUsed > 0 ? getPartnerName() : '';
     const usedLabel = partnerUsed > 0
-      ? `${selfUsed}＋${partnerUsed}（${partnerName}）＝${totalUsed}／${p.period_sessions} 堂`
-      : `${totalUsed}／${p.period_sessions} 堂`;
-    return `<div class="payment-period venue-${p.venue || ''}">
-      <div class="card-row" style="padding:0 0 8px">
-        <div>
+      ? `${selfUsed}＋${partnerUsed}（${partnerName}）＝${totalUsed}／${total} 堂`
+      : `${totalUsed}／${total} 堂`;
+    const ringColor = p.venue === '柔力' ? '#A8957E' : '#B8736A';
+    const circ = 125.7;
+    const dash = (Math.min(totalUsed / total, 1) * circ).toFixed(1);
+    return `<div class="payment-period">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="flex:1">
           <div class="card-value">${localDate(p.date)} ${p.venue ? `· ${p.venue}` : ''}</div>
           <div class="card-label">${p.package_name || ''} · ${usedLabel}</div>
+          <div class="card-label">$${Number(p.paid_amount).toLocaleString()} · 共 $${Number(p.total_amount).toLocaleString()}</div>
         </div>
-        <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
           <button onclick="editPaymentItem('${p.id}')" style="background:none;border:none;color:#4A90D9;cursor:pointer;padding:0;line-height:1" title="編輯">${SVG_EDIT}</button>
-          <div class="card-value">$${Number(p.paid_amount).toLocaleString()}</div>
-          <div class="card-label">共 $${Number(p.total_amount).toLocaleString()}</div>
+          <svg width="48" height="48" viewBox="0 0 48 48">
+            <circle cx="24" cy="24" r="20" fill="none" stroke="#e5e5ea" stroke-width="4"/>
+            <circle cx="24" cy="24" r="20" fill="none" stroke="${ringColor}" stroke-width="4"
+              stroke-dasharray="${dash} ${circ}" stroke-dashoffset="31.4" stroke-linecap="round"/>
+            <text x="24" y="21" text-anchor="middle" font-size="10" font-weight="700" fill="#1c1c1e">${totalUsed}/${total}</text>
+            <text x="24" y="33" text-anchor="middle" font-size="9" fill="#8e8e93">堂</text>
+          </svg>
         </div>
       </div>
-      <div class="payment-progress"><div class="payment-progress-bar" style="width:${pct}%"></div></div>
     </div>`;
   }
 
