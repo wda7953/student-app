@@ -360,7 +360,7 @@ async function load() {
           <svg width="48" height="48" viewBox="0 0 48 48">
             <circle cx="24" cy="24" r="20" fill="none" stroke="#e5e5ea" stroke-width="4"/>
             <circle cx="24" cy="24" r="20" fill="none" stroke="${ringColor}" stroke-width="4"
-              stroke-dasharray="${dash} ${circ}" stroke-dashoffset="31.4" stroke-linecap="round"/>
+              stroke-dasharray="${dash} ${circ}" stroke-dashoffset="0" stroke-linecap="round" transform="rotate(-90 24 24)"/>
             <text x="24" y="21" text-anchor="middle" font-size="10" font-weight="700" fill="#1c1c1e">${totalUsed}/${total}</text>
             <text x="24" y="33" text-anchor="middle" font-size="9" fill="#8e8e93">堂</text>
           </svg>
