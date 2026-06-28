@@ -28,8 +28,8 @@ form { padding: 0 20px; }
 .class-item { border-bottom: 1px solid #f2f2f7; }
 .class-item:last-child { border-bottom: none; }
 .class-header { padding: 9px 16px; display: flex; justify-content: space-between; align-items: center; }
-.class-header-wushu { background: #EDD0C9; }
-.class-header-pilates { background: #E5DDD4; }
+.class-header-wushu { background: #F5E6E9; }
+.class-header-pilates { background: #F5EAD8; }
 .class-body { padding: 10px 16px 12px; }
 .header-date { font-size: 14px; font-weight: 600; color: #1c1c1e; }
 .header-session { font-size: 13px; font-weight: 600; color: #1c1c1e; }
@@ -52,9 +52,9 @@ form { padding: 0 20px; }
 .dual-view-container { display: flex; gap: 0; }
 .dual-view-col { flex: 1; }
 .dual-view-col:first-child { border-right: 1px solid #e5e5ea; }
-.dual-view-col-title { padding: 8px 16px; font-size: 13px; font-weight: 700; color: white; }
-.dual-view-col-title.wushu { background: #B8736A; }
-.dual-view-col-title.pilates { background: #A8957E; }
+.dual-view-col-title { padding: 8px 16px; font-size: 13px; font-weight: 700; }
+.dual-view-col-title.wushu { background: #B85060; color: white; }
+.dual-view-col-title.pilates { background: #C4A07C; color: #4A3728; }
 .hidden { display: none; }
 /* 雙欄預設顯示，.hidden 時隱藏 */
 .dual-view-container { display: flex; }

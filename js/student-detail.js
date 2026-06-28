@@ -341,7 +341,7 @@ async function load() {
     const usedLabel = partnerUsed > 0
       ? `${selfUsed}＋${partnerUsed}（${partnerName}）＝${totalUsed}／${total} 堂`
       : `${totalUsed}／${total} 堂`;
-    const ringColor = p.venue === '柔力' ? '#A8957E' : '#B8736A';
+    const ringColor = p.venue === '柔力' ? '#C4A07C' : '#B85060';
     const circ = 125.7;
     const dash = (Math.min(totalUsed / total, 1) * circ).toFixed(1);
     return `<div class="payment-period">
