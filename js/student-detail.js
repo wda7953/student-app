@@ -351,19 +351,21 @@ async function load() {
     return `<div class="payment-period">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="flex:1">
-          <div class="card-value">${localDate(p.date)} ${p.venue ? `· ${p.venue}` : ''}</div>
+          <div class="card-value" style="display:flex;justify-content:space-between">
+            <span>${localDate(p.date)}</span>
+            <span>$${Number(p.total_amount).toLocaleString()}</span>
+          </div>
           <div class="card-label">${p.package_name || ''} · ${usedLabel}</div>
-          <div class="card-label">$${Number(p.paid_amount).toLocaleString()} · 共 $${Number(p.total_amount).toLocaleString()}</div>
+          <div class="card-label">$${Number(p.paid_amount).toLocaleString()}</div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-          <button onclick="editPaymentItem('${p.id}')" style="background:none;border:none;color:#4A90D9;cursor:pointer;padding:0;line-height:1" title="編輯">${SVG_EDIT}</button>
+        <div style="display:flex;align-items:center;gap:6px">
           <svg width="48" height="48" viewBox="0 0 48 48">
             <circle cx="24" cy="24" r="20" fill="none" stroke="#e5e5ea" stroke-width="4"/>
             <circle cx="24" cy="24" r="20" fill="none" stroke="${ringColor}" stroke-width="4"
               stroke-dasharray="${dash} ${circ}" stroke-dashoffset="0" stroke-linecap="round" transform="rotate(-90 24 24)"/>
-            <text x="24" y="21" text-anchor="middle" font-size="10" font-weight="700" fill="#1c1c1e">${totalUsed}/${total}</text>
-            <text x="24" y="33" text-anchor="middle" font-size="9" fill="#8e8e93">堂</text>
+            <text x="24" y="28" text-anchor="middle" font-size="10" font-weight="700" fill="#1c1c1e">${totalUsed}/${total}</text>
           </svg>
+          <button onclick="editPaymentItem('${p.id}')" style="background:none;border:none;color:#4A90D9;cursor:pointer;padding:0;line-height:1" title="編輯">${SVG_EDIT}</button>
         </div>
       </div>
     </div>`;
