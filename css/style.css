@@ -28,8 +28,8 @@ form { padding: 0 20px; }
 .class-item { border-bottom: 1px solid #f2f2f7; }
 .class-item:last-child { border-bottom: none; }
 .class-header { padding: 9px 16px; display: flex; justify-content: space-between; align-items: center; }
-.class-header-wushu { background: #F5E6E9; }
-.class-header-pilates { background: #F5EAD8; }
+.class-header-wushu { background: #F0EBE4; }
+.class-header-pilates { background: #F0EBE4; }
 .class-body { padding: 10px 16px 12px; }
 .header-date { font-size: 14px; font-weight: 600; color: #1c1c1e; }
 .header-session { font-size: 13px; font-weight: 600; color: #1c1c1e; }
