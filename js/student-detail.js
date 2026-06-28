@@ -351,12 +351,11 @@ async function load() {
     return `<div class="payment-period">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="flex:1">
-          <div class="card-value" style="display:flex;justify-content:space-between">
+          <div class="card-value" style="display:flex;justify-content:space-between;align-items:baseline">
             <span>${localDate(p.date)}</span>
-            <span>$${Number(p.total_amount).toLocaleString()}</span>
+            <span style="margin-right:8px">$${Number(p.total_amount).toLocaleString()}</span>
           </div>
           <div class="card-label">${p.package_name || ''} · ${usedLabel}</div>
-          <div class="card-label">$${Number(p.paid_amount).toLocaleString()}</div>
         </div>
         <div style="display:flex;align-items:center;gap:6px">
           <svg width="48" height="48" viewBox="0 0 48 48">
