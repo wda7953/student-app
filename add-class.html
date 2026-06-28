@@ -725,11 +725,23 @@
       document.getElementById('notes').value = cls.notes || '';
 
       const payments = await API.apiGet('getPayments', { studentId });
+      // 計算每個付款包的已用堂數
+      const usedMap = {};
+      classes.forEach(c => { if (c.payment_id) usedMap[c.payment_id] = (usedMap[c.payment_id] || 0) + 1; });
       const opts = [
         '<option value="">無連結</option>',
         ...payments
+          .filter(p => p.venue === cls.venue && (
+            (usedMap[p.id] || 0) < Number(p.period_sessions) || p.id === cls.payment_id
+          ))
           .sort((a, b) => String(b.date).localeCompare(String(a.date)))
-          .map(p => { const _pd = new Date(p.date); const _ds = `${_pd.getFullYear()}-${String(_pd.getMonth()+1).padStart(2,'0')}-${String(_pd.getDate()).padStart(2,'0')}`; return `<option value="${p.id}" ${p.id === cls.payment_id ? 'selected' : ''}>${_ds} ${p.package_name || ''} (${p.period_sessions}堂)</option>`; })
+          .map(p => {
+            const _pd = new Date(p.date);
+            const _ds = `${_pd.getFullYear()}-${String(_pd.getMonth()+1).padStart(2,'0')}-${String(_pd.getDate()).padStart(2,'0')}`;
+            const used = usedMap[p.id] || 0;
+            const remaining = Number(p.period_sessions) - used;
+            return `<option value="${p.id}" ${p.id === cls.payment_id ? 'selected' : ''}>${_ds} ${p.package_name || ''} (剩 ${remaining}/${p.period_sessions} 堂)</option>`;
+          })
       ].join('');
       document.getElementById('session-notice').innerHTML =
         `<div class="form-group" style="padding-top:0"><label>連結付款</label><select id="edit-payment-sel" style="border:1px solid #e5e5ea;border-radius:8px;padding:10px 12px;font-size:15px;width:100%;background:white;color:#1c1c1e">${opts}</select></div>`;
