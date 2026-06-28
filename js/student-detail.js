@@ -249,9 +249,9 @@ async function load() {
     const extraTag = Number(c.extra_charge) > 0
       ? `<span class="extra-charge-tag">+$${Number(c.extra_charge).toLocaleString()}</span>` : '';
     const dateStr = localDate(c.date);
-    const headerClass = c.type === 'Pilates' ? 'class-header-pilates' : 'class-header-wushu';
-    return `<div class="class-item">
-      <div class="class-header ${headerClass}">
+    const typeClass = c.type === 'Pilates' ? 'type-Pilates' : 'type-重訓';
+    return `<div class="class-item ${typeClass}">
+      <div class="class-header">
         <span class="header-date">${dateStr}${c.notes ? ' · ' + escHtml(c.notes) : ''}</span>
         <span style="display:flex;align-items:center;gap:6px">
           ${sessionInfo}${extraTag}
@@ -344,7 +344,7 @@ async function load() {
     const ringColor = p.venue === '柔力' ? '#C4A07C' : '#B85060';
     const circ = 125.7;
     const dash = (Math.min(totalUsed / total, 1) * circ).toFixed(1);
-    return `<div class="payment-period">
+    return `<div class="payment-period venue-${p.venue || ''}">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="flex:1">
           <div class="card-value" style="display:flex;justify-content:space-between;align-items:baseline">
@@ -404,19 +404,15 @@ async function load() {
     const firstIsRouli = s.venue === '柔力';
     dual.innerHTML = firstIsRouli ? `
       <div class="dual-view-col">
-        <div class="dual-view-col-title pilates">柔力</div>
         ${renderPaymentsByMonth(rouliPayments)}
       </div>
       <div class="dual-view-col">
-        <div class="dual-view-col-title wushu">武士</div>
         ${renderPaymentsByMonth(wushuPayments)}
       </div>` : `
       <div class="dual-view-col">
-        <div class="dual-view-col-title wushu">武士</div>
         ${renderPaymentsByMonth(wushuPayments)}
       </div>
       <div class="dual-view-col">
-        <div class="dual-view-col-title pilates">柔力</div>
         ${renderPaymentsByMonth(rouliPayments)}
       </div>`;
   } else {
