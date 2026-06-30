@@ -202,17 +202,18 @@ function sessionLabel(cls, payments) {
 }
 
 async function load() {
-  let students, classes, payments, partnerClasses = [];
+  let students, classes, payments, partnerClasses = [], partnerPayments = [];
   try {
     const partnerId = localStorage.getItem('partner_' + studentId) || '';
     const reqs = [
       API.apiGet('getStudents'),
       API.apiGet('getClasses', { studentId }),
       API.apiGet('getPayments', { studentId }),
-      partnerId ? API.apiGet('getClasses', { studentId: partnerId }) : Promise.resolve([])
+      partnerId ? API.apiGet('getClasses', { studentId: partnerId }) : Promise.resolve([]),
+      partnerId ? API.apiGet('getPayments', { studentId: partnerId }) : Promise.resolve([])
     ];
-    const [s0, s1, s2, s3] = await Promise.all(reqs);
-    [students, classes, payments, partnerClasses] = [s0, s1, s2, s3];
+    const [s0, s1, s2, s3, s4] = await Promise.all(reqs);
+    [students, classes, payments, partnerClasses, partnerPayments] = [s0, s1, s2, s3, s4];
   } catch (e) {
     ['info-card', 'classes-card', 'payments-card'].forEach(id => {
       const el = document.getElementById(id);
@@ -419,6 +420,50 @@ async function load() {
     document.getElementById('dual-payments').classList.add('hidden');
     document.getElementById('payments-card').classList.remove('hidden');
     document.getElementById('payments-card').innerHTML = renderPaymentsByMonth(sortedPayments);
+  }
+  // 共用付款：夥伴的付款中，找出自己的課程有用到的
+  const usedPaymentIds = new Set(classes.filter(c => c.payment_id).map(c => c.payment_id));
+  const sharedPayments = (partnerPayments || [])
+    .filter(p => usedPaymentIds.has(p.id))
+    .sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  const sharedSection = document.getElementById('shared-payments-section');
+  const sharedCard = document.getElementById('shared-payments-card');
+  if (sharedCard && sharedSection) {
+    if (sharedPayments.length > 0) {
+      const partnerName = getPartnerName() || '夥伴';
+      sharedCard.innerHTML = sharedPayments.map(p => {
+        const selfUsed = classes.filter(c => c.payment_id === p.id).length;
+        const partnerUsed = (partnerClasses || []).filter(c => c.payment_id === p.id).length;
+        const totalUsed = selfUsed + partnerUsed;
+        const total = Number(p.period_sessions);
+        const usedLabel = `${selfUsed}＋${partnerUsed}（${partnerName}）＝${totalUsed}／${total} 堂`;
+        const ringColor = p.venue === '柔力' ? '#C4A07C' : '#B85060';
+        const circ = 125.7;
+        const dash = (Math.min(totalUsed / total, 1) * circ).toFixed(1);
+        return `<div class="payment-period venue-${p.venue || ''}">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="flex:1">
+              <div class="card-value" style="display:flex;justify-content:space-between;align-items:baseline">
+                <span>${localDate(p.date)} <span style="font-size:11px;font-weight:400;color:#8e8e93">${partnerName} 的付款</span></span>
+                <span style="margin-right:8px">$${Number(p.total_amount).toLocaleString()}</span>
+              </div>
+              <div class="card-label">${p.package_name || ''} · ${usedLabel}</div>
+            </div>
+            <svg width="48" height="48" viewBox="0 0 48 48">
+              <circle cx="24" cy="24" r="20" fill="none" stroke="#e5e5ea" stroke-width="4"/>
+              <circle cx="24" cy="24" r="20" fill="none" stroke="${ringColor}" stroke-width="4"
+                stroke-dasharray="${dash} ${circ}" stroke-dashoffset="0" stroke-linecap="round" transform="rotate(-90 24 24)"/>
+              <text x="24" y="28" text-anchor="middle" font-size="10" font-weight="700" fill="#1c1c1e">${totalUsed}/${total}</text>
+            </svg>
+          </div>
+        </div>`;
+      }).join('');
+      sharedSection.classList.remove('hidden');
+      sharedCard.classList.remove('hidden');
+    } else {
+      sharedSection.classList.add('hidden');
+      sharedCard.classList.add('hidden');
+    }
   }
   } catch(e) {
     ['info-card', 'classes-card', 'payments-card'].forEach(id => {
