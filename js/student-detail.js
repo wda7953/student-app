@@ -503,14 +503,19 @@ async function loadLinkPayments() {
   const list = document.getElementById('link-payments-list');
   if (!targetId) { list.innerHTML = ''; return; }
   list.innerHTML = '<div class="empty">載入中…</div>';
-  const [payments, targetClasses] = await Promise.all([
+  // 共用付款：夫妻/夥伴輪流上課會消耗同一批預收款，
+  // 已用堂數必須同時計入 targetId 本人與其夥伴的課程，否則剩餘堂數會高估、
+  // 讓早已用滿的付款包仍被列為可連結（曾把靖宜的 6 堂包誤顯示成剩 2 堂）。
+  const partnerOfTarget = localStorage.getItem('partner_' + targetId) || '';
+  const classSourceIds = [targetId, partnerOfTarget].filter(Boolean);
+  const [payments, ...classLists] = await Promise.all([
     API.apiGet('getPayments', { studentId: targetId }),
-    API.apiGet('getClasses', { studentId: targetId })
+    ...classSourceIds.map(id => API.apiGet('getClasses', { studentId: id }))
   ]);
   if (!payments.length) { list.innerHTML = '<div class="empty">無收款記錄</div>'; return; }
 
   const usedMap = {};
-  targetClasses.forEach(c => { if (c.payment_id) usedMap[c.payment_id] = (usedMap[c.payment_id] || 0) + 1; });
+  classLists.flat().forEach(c => { if (c.payment_id) usedMap[c.payment_id] = (usedMap[c.payment_id] || 0) + 1; });
 
   const active = payments
     .filter(p => (usedMap[p.id] || 0) < Number(p.period_sessions))
