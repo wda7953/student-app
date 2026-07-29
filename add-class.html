@@ -154,7 +154,10 @@
 <body>
   <div class="header">
     <button class="back-btn" onclick="history.back()">‹ 返回</button>
-    <span>新增上課記錄</span>
+    <span id="page-title" style="text-align:center;line-height:1.15">
+      <span id="hd-student-name" style="display:block;font-size:17px;font-weight:600">學員</span>
+      <span class="hd-sub" style="display:block;font-size:12px;font-weight:400;opacity:0.85">新增上課記錄</span>
+    </span>
     <span></span>
   </div>
   <form onsubmit="submitForm(event)" style="padding-top:16px">
@@ -358,6 +361,9 @@
 
     // 載入學員清單供一對二選擇
     API.apiGet('getStudents').then(students => {
+      // 標題顯示目前學員姓名
+      const me = students.find(s => s.id === studentId);
+      if (me) document.getElementById('hd-student-name').textContent = me.name;
       const sel = document.getElementById('partner');
       students
         .filter(s => s.id !== studentId && s.status === 'active')
@@ -706,7 +712,7 @@
     if (editId) initEditMode();
 
     async function initEditMode() {
-      document.querySelector('.header span:nth-child(2)').textContent = '編輯上課記錄';
+      document.querySelector('#page-title .hd-sub').textContent = '編輯上課記錄';
       document.querySelector('.btn-primary').textContent = '儲存變更';
       document.getElementById('pilates-template').classList.add('hidden');
       document.getElementById('weights-template').classList.add('hidden');
