@@ -598,12 +598,34 @@
 
     // ── 付款周期查詢（含夥伴 fallback）────────────────
     async function getActivePaymentWithPartner(sid, venue) {
-      let active = await API.apiGet('getActivePayment', { studentId: sid, venue });
-      if (active?.payment) return { active, usingPartner: false };
-      const defaultPartnerId = localStorage.getItem('partner_' + sid);
-      if (defaultPartnerId) {
-        const partnerActive = await API.apiGet('getActivePayment', { studentId: defaultPartnerId, venue });
-        if (partnerActive?.payment) return { active: partnerActive, usingPartner: true, partnerId: defaultPartnerId };
+      // 共用付款：夫妻/一對二夥伴輪流上課會消耗同一批預收款，
+      // 判斷付款包是否還有空位時，「已用堂數」必須同時計入本人與夥伴的課，
+      // 否則會把早已用滿的包誤判成有空位、把新課塞進去造成灌爆
+      // （後端 getActivePayment 只數單一學員，不能單獨信任，改由前端合併計算）。
+      const partnerId = localStorage.getItem('partner_' + sid) || '';
+      const classSourceIds = [sid, partnerId].filter(Boolean);
+      const classLists = await Promise.all(
+        classSourceIds.map(id => API.apiGet('getClasses', { studentId: id }))
+      );
+      const usedMap = {};
+      classLists.flat().forEach(c => { if (c.payment_id) usedMap[c.payment_id] = (usedMap[c.payment_id] || 0) + 1; });
+
+      // 候選順序沿用原本 fallback：先找本人的包，本人沒空位再找夥伴的包；
+      // 同一人內舊包先用完（date 由舊到新）。
+      for (const [ownerId, usingPartner] of [[sid, false], [partnerId, true]]) {
+        if (!ownerId) continue;
+        const payments = await API.apiGet('getPayments', { studentId: ownerId });
+        const candidate = payments
+          .filter(p => p.venue === venue && (usedMap[p.id] || 0) < Number(p.period_sessions))
+          .sort((a, b) => String(a.date).localeCompare(String(b.date)))[0];
+        if (candidate) {
+          const used = usedMap[candidate.id] || 0;
+          return {
+            active: { payment: candidate, used, remaining: Number(candidate.period_sessions) - used, session_number: used + 1 },
+            usingPartner,
+            partnerId: usingPartner ? partnerId : undefined
+          };
+        }
       }
       return { active: null, usingPartner: false };
     }
@@ -731,9 +753,11 @@
       document.getElementById('notes').value = cls.notes || '';
 
       const payments = await API.apiGet('getPayments', { studentId });
-      // 計算每個付款包的已用堂數
+      // 計算每個付款包的已用堂數：共用付款要把夥伴的課一起數，否則剩餘堂數會高估、灌爆
+      const editPartnerId = localStorage.getItem('partner_' + studentId) || '';
+      const partnerClasses = editPartnerId ? await API.apiGet('getClasses', { studentId: editPartnerId }) : [];
       const usedMap = {};
-      classes.forEach(c => { if (c.payment_id) usedMap[c.payment_id] = (usedMap[c.payment_id] || 0) + 1; });
+      [...classes, ...partnerClasses].forEach(c => { if (c.payment_id) usedMap[c.payment_id] = (usedMap[c.payment_id] || 0) + 1; });
       const opts = [
         '<option value="">無連結</option>',
         ...payments
