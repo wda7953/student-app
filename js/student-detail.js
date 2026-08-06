@@ -242,11 +242,9 @@ async function load() {
 
   function renderClassItem(c, payments) {
     const p = c.payment_id ? payments.find(p => p.id === c.payment_id) : null;
-    // 未連結且沒收單堂費（extra_charge=0）＝預收堂數用完、還沒收錢 → 標「待收款」；
-    // 未連結但有 extra_charge＝已收單堂費，不算待收款。
-    const isDue = !c.payment_id && !(Number(c.extra_charge) > 0);
+    // 未連結＝沒對應到預收付款包，一律「待收款」；extra_charge 是額外加收、與此無關。
     const sessionInfo = !c.payment_id
-      ? `<span class="unlink-tag${isDue ? ' due' : ''}" onclick="openLinkModal('${c.id}')">未連結 · ${isDue ? '待收款 · ' : ''}連結▸</span>`
+      ? `<span class="unlink-tag due" onclick="openLinkModal('${c.id}')">未連結 · 待收款 · 連結▸</span>`
       : p
         ? `<span class="header-session">第${c._session_number}堂／${p.period_sessions}堂</span>`
         : `<span class="header-session">已連結（共用）</span>`;
