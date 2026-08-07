@@ -47,7 +47,7 @@ function applyFilter() {
   } else if (currentFilter === '柔力') {
     students = students.filter(s => s.venue === '柔力');
   } else if (currentFilter === '共課夥伴') {
-    students = students.filter(s => localStorage.getItem('partner_' + s.id));
+    students = students.filter(s => s.partner_id);
   } else if (currentFilter === '單次') {
     students = students.filter(s => localStorage.getItem('single_rate_' + s.id));
   }
@@ -66,7 +66,7 @@ function renderStudents(students) {
 
 function studentRow(s) {
   const lastDate = lastClassMap[s.id] ? lastClassMap[s.id] : '未有記錄';
-  const hasPartner = localStorage.getItem('partner_' + s.id);
+  const hasPartner = s.partner_id;
   const hasRate = localStorage.getItem('single_rate_' + s.id);
   const tags = [
     hasPartner ? '共課' : null,

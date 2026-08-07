@@ -93,7 +93,8 @@ let currentStudent = null;
 let allStudents = [];
 
 function getPartnerName() {
-  const pid = localStorage.getItem('partner_' + studentId);
+  const me = allStudents.find(s => s.id === studentId);
+  const pid = me && me.partner_id;
   if (!pid) return null;
   const p = allStudents.find(s => s.id === pid);
   return p ? p.name : null;
@@ -114,7 +115,7 @@ function renderInfoView(s) {
 }
 
 function renderInfoEdit(s) {
-  const currentPartnerId = localStorage.getItem('partner_' + studentId) || '';
+  const currentPartnerId = (currentStudent && currentStudent.partner_id) || '';
   const partnerOptions = allStudents
     .filter(p => p.id !== studentId && p.status === 'active')
     .sort((a, b) => a.name.localeCompare(b.name, 'zh-TW'))
@@ -176,12 +177,11 @@ async function saveInfo() {
   }
   const partnerVal = document.getElementById('edit-partner')?.value;
   if (partnerVal !== undefined) {
-    if (partnerVal) {
-      localStorage.setItem('partner_' + studentId, partnerVal);
-      localStorage.setItem('partner_' + partnerVal, studentId); // 雙向
-    } else {
-      localStorage.removeItem('partner_' + studentId);
-    }
+    await API.apiPost('setPartner', { student_id: studentId, partner_id: partnerVal || '' });
+    // 同步本機快取，讓下面 renderInfoView 立刻顯示正確夥伴名
+    currentStudent.partner_id = partnerVal || '';
+    const meInList = allStudents.find(s => s.id === studentId);
+    if (meInList) meInList.partner_id = partnerVal || '';
   }
   const data = {
     id: currentStudent.id,
@@ -204,16 +204,17 @@ function sessionLabel(cls, payments) {
 async function load() {
   let students, classes, payments, partnerClasses = [], partnerPayments = [];
   try {
-    const partnerId = localStorage.getItem('partner_' + studentId) || '';
-    const reqs = [
-      API.apiGet('getStudents'),
+    // 夥伴配對現在存在後端 partner_id，需先拿到 students 才知道夥伴是誰
+    students = await API.apiGet('getStudents');
+    const me = students.find(s => s.id === studentId);
+    const partnerId = (me && me.partner_id) || '';
+    const [c0, p0, c1, p1] = await Promise.all([
       API.apiGet('getClasses', { studentId }),
       API.apiGet('getPayments', { studentId }),
       partnerId ? API.apiGet('getClasses', { studentId: partnerId }) : Promise.resolve([]),
       partnerId ? API.apiGet('getPayments', { studentId: partnerId }) : Promise.resolve([])
-    ];
-    const [s0, s1, s2, s3, s4] = await Promise.all(reqs);
-    [students, classes, payments, partnerClasses, partnerPayments] = [s0, s1, s2, s3, s4];
+    ]);
+    [classes, payments, partnerClasses, partnerPayments] = [c0, p0, c1, p1];
   } catch (e) {
     ['info-card', 'classes-card', 'payments-card'].forEach(id => {
       const el = document.getElementById(id);
@@ -486,7 +487,7 @@ function openLinkModal(classId) {
   linkingClassId = classId;
   const modal = document.getElementById('link-modal');
   modal.classList.remove('hidden');
-  const partnerId = localStorage.getItem('partner_' + studentId) || '';
+  const partnerId = (allStudents.find(s => s.id === studentId) || {}).partner_id || '';
   const sel = document.getElementById('link-student-sel');
   const self = allStudents.find(s => s.id === studentId);
   const others = allStudents
@@ -507,7 +508,7 @@ async function loadLinkPayments() {
   // 共用付款：夫妻/夥伴輪流上課會消耗同一批預收款，
   // 已用堂數必須同時計入 targetId 本人與其夥伴的課程，否則剩餘堂數會高估、
   // 讓早已用滿的付款包仍被列為可連結（曾把靖宜的 6 堂包誤顯示成剩 2 堂）。
-  const partnerOfTarget = localStorage.getItem('partner_' + targetId) || '';
+  const partnerOfTarget = (allStudents.find(s => s.id === targetId) || {}).partner_id || '';
   const classSourceIds = [targetId, partnerOfTarget].filter(Boolean);
   const [payments, ...classLists] = await Promise.all([
     API.apiGet('getPayments', { studentId: targetId }),
