@@ -66,7 +66,7 @@ function classTypeClass(type) {
 
 function goAddClass() {
   const v = currentStudent?.venue || '';
-  location.href = `add-class.html?id=${studentId}${v ? '&venue=' + encodeURIComponent(v) : ''}&v=26`;
+  location.href = `add-class.html?id=${studentId}${v ? '&venue=' + encodeURIComponent(v) : ''}&v=27`;
 }
 function goAddPayment() {
   const v = currentStudent?.venue || '';
@@ -204,17 +204,15 @@ function sessionLabel(cls, payments) {
 async function load() {
   let students, classes, payments, partnerClasses = [], partnerPayments = [];
   try {
-    // 夥伴配對現在存在後端 partner_id，需先拿到 students 才知道夥伴是誰
-    students = await API.apiGet('getStudents');
-    const me = students.find(s => s.id === studentId);
-    const partnerId = (me && me.partner_id) || '';
-    const [c0, p0, c1, p1] = await Promise.all([
-      API.apiGet('getClasses', { studentId }),
-      API.apiGet('getPayments', { studentId }),
-      partnerId ? API.apiGet('getClasses', { studentId: partnerId }) : Promise.resolve([]),
-      partnerId ? API.apiGet('getPayments', { studentId: partnerId }) : Promise.resolve([])
-    ]);
-    [classes, payments, partnerClasses, partnerPayments] = [c0, p0, c1, p1];
+    // 一趟撈回學員清單＋本人與夥伴的課/付款，取代原本「先 getStudents（一趟）再平行 4 支（一趟）」
+    // 的兩趟往返。冷啟動時後端每趟要 ~10 秒，合成一趟可直接砍半開啟時間。
+    const b = await API.apiGet('getBundle', { studentId });
+    if (!b || !b.students) throw new Error('bundle failed');
+    students = b.students;
+    classes = b.classes;
+    payments = b.payments;
+    partnerClasses = b.partnerClasses || [];
+    partnerPayments = b.partnerPayments || [];
   } catch (e) {
     ['info-card', 'classes-card', 'payments-card'].forEach(id => {
       const el = document.getElementById(id);
@@ -565,7 +563,7 @@ async function deleteClassItem(classId) {
 }
 
 function editClassItem(classId) {
-  location.href = `add-class.html?edit=${classId}&id=${studentId}&v=26`;
+  location.href = `add-class.html?edit=${classId}&id=${studentId}&v=27`;
 }
 
 function editPaymentItem(paymentId) {
