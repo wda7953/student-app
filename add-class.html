@@ -386,7 +386,9 @@
     let _currentExercises = []; // 對應 weights-grid 目前的動作陣列
 
     // ── 初始化 ────────────────────────────────────────
-    { const n = new Date(); document.getElementById('date').value = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; }
+    // 只有「新增」才預填今天；編輯模式一開先留空，等 initEditMode 撈到真實資料再填，
+    // 避免資料還沒載入時就顯示「今天」這種看似正常卻是假的預設值。
+    if (!editId) { const n = new Date(); document.getElementById('date').value = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; }
     buildCatTabs();
     onTypeChange();
     // 優先從 URL 讀預設地點（由學員資料頁帶入），不需等 API
@@ -661,9 +663,36 @@
       }
     }
 
+    // ── 編輯載入鎖 ────────────────────────────────────
+    // 編輯模式資料是非同步撈的，撈回來前表單其實是「今天／武士／重訓／空內容」的假預設。
+    // 這段期間鎖住整個表單，避免使用者在假預設上修改後按儲存，把真實資料（尤其課程內容）清空。
+    let editLoaded = false;
+    function lockEditForm() {
+      const btn = document.querySelector('.btn-primary');
+      btn.disabled = true; btn.textContent = '載入中…';
+      let ov = document.getElementById('edit-loading');
+      if (!ov) {
+        ov = document.createElement('div');
+        ov.id = 'edit-loading';
+        ov.style.cssText = 'position:fixed;inset:0;background:rgba(250,248,245,0.8);z-index:9000;display:flex;align-items:center;justify-content:center;font-size:16px;color:#7A5C3E;font-weight:600';
+        ov.textContent = '載入中…';
+        document.body.appendChild(ov);
+      }
+      ov.style.display = 'flex';
+    }
+    function unlockEditForm() {
+      editLoaded = true;
+      const btn = document.querySelector('.btn-primary');
+      btn.disabled = false; btn.textContent = '儲存變更';
+      const ov = document.getElementById('edit-loading');
+      if (ov) ov.style.display = 'none';
+    }
+
     // ── 儲存 ──────────────────────────────────────────
     async function submitForm(e) {
       e.preventDefault();
+      // 編輯模式尚未載入完成前禁止儲存，避免以假預設覆蓋真實資料
+      if (editId && !editLoaded) return;
       const btn = document.querySelector('.btn-primary');
       btn.textContent = '儲存中…';
       btn.disabled = true;
@@ -735,11 +764,13 @@
 
       history.back();
     }
-    if (editId) initEditMode();
+    if (editId) {
+      lockEditForm();
+      initEditMode().then(unlockEditForm).catch(() => unlockEditForm());
+    }
 
     async function initEditMode() {
       document.querySelector('#page-title .hd-sub').textContent = '編輯上課記錄';
-      document.querySelector('.btn-primary').textContent = '儲存變更';
       document.getElementById('pilates-template').classList.add('hidden');
       document.getElementById('weights-template').classList.add('hidden');
       document.getElementById('extra_charge').closest('.form-group').style.display = 'none';

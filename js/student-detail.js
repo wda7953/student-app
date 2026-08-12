@@ -66,7 +66,7 @@ function classTypeClass(type) {
 
 function goAddClass() {
   const v = currentStudent?.venue || '';
-  location.href = `add-class.html?id=${studentId}${v ? '&venue=' + encodeURIComponent(v) : ''}&v=25`;
+  location.href = `add-class.html?id=${studentId}${v ? '&venue=' + encodeURIComponent(v) : ''}&v=26`;
 }
 function goAddPayment() {
   const v = currentStudent?.venue || '';
@@ -565,7 +565,7 @@ async function deleteClassItem(classId) {
 }
 
 function editClassItem(classId) {
-  location.href = `add-class.html?edit=${classId}&id=${studentId}&v=25`;
+  location.href = `add-class.html?edit=${classId}&id=${studentId}&v=26`;
 }
 
 function editPaymentItem(paymentId) {
