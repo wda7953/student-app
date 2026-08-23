@@ -2,12 +2,33 @@ let allStudents = [];
 let lastClassMap = {};
 let currentFilter = '全部';
 
+const OVERVIEW_CACHE_KEY = 'sa_overview_cache';
+
 async function loadStudents() {
-  // 一趟拿回「學員全列 + 每人最後上課日」，不再整張課表傳到手機（後端已算好 lastClassMap）
-  const data = await API.apiGet('getStudentsOverview');
-  allStudents = data.students || [];
-  lastClassMap = data.lastClassMap || {};
-  applyFilter();
+  // 1) 先用本機快取「秒畫」出上次的清單，開 App 不必等後端醒來（Apps Script 冷啟動）
+  try {
+    const cached = JSON.parse(localStorage.getItem(OVERVIEW_CACHE_KEY) || 'null');
+    if (cached && cached.students) {
+      allStudents = cached.students;
+      lastClassMap = cached.lastClassMap || {};
+      applyFilter();
+    }
+  } catch (_) {}
+
+  // 2) 背景抓最新資料，回來再更新畫面並寫回快取；失敗就維持快取畫面不清空
+  try {
+    const data = await API.apiGet('getStudentsOverview');
+    if (data && data.students) {
+      allStudents = data.students;
+      lastClassMap = data.lastClassMap || {};
+      applyFilter();
+      try {
+        localStorage.setItem(OVERVIEW_CACHE_KEY, JSON.stringify({
+          students: allStudents, lastClassMap: lastClassMap
+        }));
+      } catch (_) {}
+    }
+  } catch (_) {}
 }
 
 function sortByLastClass(students) {
