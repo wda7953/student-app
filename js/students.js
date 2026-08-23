@@ -3,20 +3,10 @@ let lastClassMap = {};
 let currentFilter = '全部';
 
 async function loadStudents() {
-  const [students, classes] = await Promise.all([
-    API.apiGet('getStudents'),
-    API.apiGet('getClasses')
-  ]);
-
-  classes.forEach(c => {
-    const d = new Date(c.date);
-    const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    if (!lastClassMap[c.student_id] || ds > lastClassMap[c.student_id]) {
-      lastClassMap[c.student_id] = ds;
-    }
-  });
-
-  allStudents = students;
+  // 一趟拿回「學員全列 + 每人最後上課日」，不再整張課表傳到手機（後端已算好 lastClassMap）
+  const data = await API.apiGet('getStudentsOverview');
+  allStudents = data.students || [];
+  lastClassMap = data.lastClassMap || {};
   applyFilter();
 }
 
