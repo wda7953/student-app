@@ -43,15 +43,29 @@
     async function submitForm(e) {
       e.preventDefault();
       const btn = document.querySelector('.btn-primary');
+      const name = document.getElementById('name').value.trim();
+      if (!name) { alert('請輸入姓名'); return; }
       btn.textContent = '儲存中…';
       btn.disabled = true;
-      await API.apiPost('addStudent', {
-        name: document.getElementById('name').value,
-        phone: document.getElementById('phone').value,
-        venue: document.getElementById('venue').value,
-        notes: document.getElementById('notes').value
-      });
-      location.href = 'index.html';
+      try {
+        const res = await API.apiPost('addStudent', {
+          name: name,
+          phone: document.getElementById('phone').value,
+          venue: document.getElementById('venue').value,
+          notes: document.getElementById('notes').value
+        });
+        // 只有真的成功才導頁（含後端判定同名重複也算完成）
+        if (res && res.success) {
+          location.href = 'index.html';
+        } else {
+          throw new Error((res && res.error) || 'unknown');
+        }
+      } catch (err) {
+        // 失敗：解鎖按鈕讓使用者重試，不要假裝成功導頁
+        btn.textContent = '儲存';
+        btn.disabled = false;
+        alert('儲存失敗，請再試一次');
+      }
     }
   </script>
 </body>
