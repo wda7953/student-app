@@ -745,7 +745,11 @@
         if (!paymentId) {
           const cb = document.getElementById('single-charge-cb');
           const rate = localStorage.getItem('single_rate_' + studentId);
-          if (cb?.checked && rate) {
+          // cb 可能還沒被 checkActivePayment 畫出來（後端冷啟動 3-8 秒，使用者搶先按儲存）。
+          // 原本抓不到 cb 就整段跳過 → 明明有單次費率卻沒建收款、課存成未連結（仁哥 09-12 事件）。
+          // 改成：勾選框未出現時視同「預設打勾」，只有它確實存在且被手動取消勾選才不建。
+          const wantSingle = cb ? cb.checked : true;
+          if (wantSingle && rate) {
             const pmtResult = await API.apiPost('addPayment', {
               student_id: studentId,
               venue: payload.venue,
