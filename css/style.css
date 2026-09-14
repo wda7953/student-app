@@ -82,3 +82,40 @@ form { padding: 0 20px; }
 .month-group { margin-bottom: 2px; }
 .month-header { display: flex; align-items: center; gap: 8px; padding: 10px 16px 6px; font-size: 13px; font-weight: 600; color: #8e8e93; cursor: pointer; user-select: none; }
 .month-arrow { font-size: 10px; }
+
+/* 底部切換列（總覽／學生／收費），三頁共用 */
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(3, 1fr); background: #fff; border-top: 1px solid #e5e5ea; padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px)); z-index: 50; }
+.tabbar a { display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; color: #8e8e93; font-size: 11px; font-weight: 600; }
+.tabbar a.active { color: #6B5C52; font-weight: 700; }
+.tabbar svg { width: 22px; height: 22px; }
+body.has-tabbar { padding-bottom: 78px; }
+
+/* 總覽／收費 儀表板卡片 */
+.dash { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.kpi-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.kpi { background: #fff; border-radius: 14px; padding: 14px 12px; }
+.kpi .k-label { font-size: 12px; color: #8e8e93; font-weight: 600; }
+.kpi .k-num { font-size: 24px; font-weight: 700; margin-top: 4px; }
+.kpi .k-num small { font-size: 13px; font-weight: 600; color: #8e8e93; }
+.kpi .k-sub { font-size: 12px; color: #6B5C52; margin-top: 2px; }
+.kpi .k-sub.muted { color: #8e8e93; }
+.dash-card { background: #fff; border-radius: 14px; padding: 16px; }
+.dash-card .dc-title { font-size: 15px; font-weight: 700; }
+.ov-header { background: #6B5C52; color: #fff; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+.ov-header .oh-title { font-size: 20px; font-weight: 700; }
+.ov-header .oh-date { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+.ov-refresh { background: rgba(255,255,255,0.18); color: #fff; border: none; border-radius: 16px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.week-strip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin-top: 14px; }
+.week-day { text-align: center; padding: 6px 0; border-radius: 10px; cursor: pointer; }
+.week-day.sel { background: #6B5C52; }
+.week-day.sel .wd-dow, .week-day.sel .wd-date { color: #fff; }
+.wd-dow { font-size: 11px; color: #8e8e93; }
+.wd-date { font-size: 14px; font-weight: 600; margin-top: 4px; }
+.wd-dot { width: 5px; height: 5px; border-radius: 50%; margin: 4px auto 0; background: transparent; }
+.day-row { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid #f2f2f7; }
+.day-row:last-child { border-bottom: none; }
+.day-bar { width: 3px; height: 30px; border-radius: 2px; }
+.venue-tag { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 10px; }
+.venue-tag.武士 { background: #fbe9ec; color: #B85060; }
+.venue-tag.柔力 { background: #f4ecdf; color: #9A7B4F; }
+.pay-card { background: #fff; border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; }

@@ -10,10 +10,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="theme-color" content="#7A5C3E">
 </head>
-<body>
+<body class="has-tabbar">
   <div class="header">
-    <span>學員</span>
-    <button class="back-btn" onclick="location.href='add-student.html?v=32'" style="font-size:24px">＋</button>
+    <span>學生</span>
+    <button class="back-btn" onclick="location.href='add-student.html?v=33'" style="font-size:24px">＋</button>
   </div>
   <div class="search-bar">
     <input type="search" id="search" placeholder="搜尋學員姓名" oninput="applyFilter()">
@@ -30,7 +30,22 @@
   <div class="section">結案</div>
   <ul class="student-list" id="inactive-list"></ul>
 
+  <nav class="tabbar">
+    <a href="overview.html?v=33">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+      <span>總覽</span>
+    </a>
+    <a href="index.html" class="active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+      <span>學生</span>
+    </a>
+    <a href="charging.html?v=33">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      <span>收費</span>
+    </a>
+  </nav>
+
   <script src="js/api.js"></script>
-  <script src="js/students.js?v=32"></script>
+  <script src="js/students.js?v=33"></script>
 </body>
 </html>
