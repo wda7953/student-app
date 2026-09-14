@@ -1,5 +1,5 @@
 // 總覽頁：抓後端一趟算好的 getDashboard，快取先畫再背景更新（同 students.js 的秒開策略）
-const DASH_CACHE_KEY = 'sa_dashboard_cache_v1';
+const DASH_CACHE_KEY = 'sa_dashboard_cache_v2';
 
 let dashData = null;      // 完整 dashboard 回傳
 let selectedDay = null;   // 目前選的日期字串 yyyy-MM-dd

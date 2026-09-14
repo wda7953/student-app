@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>收費</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=34">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="theme-color" content="#7A5C3E">
@@ -13,32 +13,13 @@
 <body class="has-tabbar">
   <div class="ov-header">
     <div style="display:flex;align-items:center;gap:12px">
-      <svg onclick="location.href='overview.html?v=33'" style="cursor:pointer" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      <svg onclick="location.href='overview.html?v=34'" style="cursor:pointer" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
       <div class="oh-title">收費</div>
       <span class="oh-date" id="ch-count"></span>
     </div>
   </div>
 
   <div class="dash">
-    <!-- 三格 KPI -->
-    <div class="kpi-grid">
-      <div class="kpi">
-        <div class="k-label">本月收到</div>
-        <div class="k-num" style="font-size:19px;margin-top:6px" id="kpi-month">–</div>
-        <div class="k-sub" id="kpi-month-count">–</div>
-      </div>
-      <div class="kpi">
-        <div class="k-label">累計收入</div>
-        <div class="k-num" style="font-size:19px;margin-top:6px" id="kpi-total">–</div>
-        <div class="k-sub" id="kpi-total-count">–</div>
-      </div>
-      <div class="kpi">
-        <div class="k-label">未上課預收</div>
-        <div class="k-num" style="font-size:19px;margin-top:6px" id="kpi-prepaid">–</div>
-        <div class="k-sub muted">剩餘堂數×鐘點</div>
-      </div>
-    </div>
-
     <!-- 篩選 -->
     <div style="display:flex;gap:8px">
       <button class="filter-chip active" onclick="setRange('本月')">本月</button>
@@ -47,14 +28,55 @@
       <button class="filter-chip" onclick="setRange('全部')">全部</button>
     </div>
 
-    <!-- 收費紀錄 -->
+    <!-- 合計收入 -->
+    <div class="dash-card">
+      <div style="font-size:13px;color:#8e8e93;font-weight:600"><span id="sum-label">本月</span>收入</div>
+      <div style="font-size:30px;font-weight:700;margin-top:4px" id="sum-total">–</div>
+      <div style="font-size:12px;color:#8e8e93;margin-top:2px">柔力全額 ＋ 武士抽成(×60%)</div>
+    </div>
+
+    <!-- 柔力 -->
+    <div class="dash-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="dc-title" style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:50%;background:#C4A07C;display:inline-block"></span>柔力</div>
+        <span style="font-size:12px;color:#8e8e93">自營 · 100%</span>
+      </div>
+      <div class="card-row" style="padding:8px 0;border-bottom:1px solid #f2f2f7"><span class="card-label">單次</span><span class="card-value" id="r-single">–</span></div>
+      <div class="card-row" style="padding:8px 0;border-bottom:1px solid #f2f2f7"><span class="card-label">套餐</span><span class="card-value" id="r-package">–</span></div>
+      <div class="card-row" style="padding:8px 0"><span class="card-label" style="font-weight:700;color:#1c1c1e">柔力小計</span><span class="card-value" style="font-weight:700;color:#6B5C52" id="r-total">–</span></div>
+    </div>
+
+    <!-- 武士 -->
+    <div class="dash-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="dc-title" style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:50%;background:#B85060;display:inline-block"></span>武士</div>
+        <span style="font-size:12px;color:#8e8e93">受僱 · 抽成 60%</span>
+      </div>
+      <div class="card-row" style="padding:8px 0;border-bottom:1px solid #f2f2f7"><span class="card-label">收款（排除黃誼淇）</span><span class="card-value" id="w-gross">–</span></div>
+      <div class="card-row" style="padding:8px 0"><span class="card-label" style="font-weight:700;color:#1c1c1e">抽成 ×60%</span><span class="card-value" style="font-weight:700;color:#6B5C52" id="w-income">–</span></div>
+    </div>
+
+    <!-- 未上課預收（柔力） -->
+    <div class="dash-card" style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:13px;color:#8e8e93">未上課預收（柔力）</div>
+        <div style="font-size:12px;color:#8e8e93;margin-top:2px">目前剩餘堂數×單價</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:20px;font-weight:700" id="r-unrealized">–</div>
+        <div style="font-size:12px;color:#8e8e93" id="r-unrealized-sessions"></div>
+      </div>
+    </div>
+
+    <!-- 明細 -->
+    <div class="dc-title" style="padding:2px">收費明細</div>
     <div id="pay-list" style="display:flex;flex-direction:column;gap:10px">
       <div style="color:#8e8e93;font-size:14px;padding:8px 2px">載入中…</div>
     </div>
   </div>
 
   <nav class="tabbar">
-    <a href="overview.html?v=33">
+    <a href="overview.html?v=34">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
       <span>總覽</span>
     </a>
@@ -62,13 +84,13 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
       <span>學生</span>
     </a>
-    <a href="charging.html?v=33" class="active">
+    <a href="charging.html?v=34" class="active">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
       <span>收費</span>
     </a>
   </nav>
 
-  <script src="js/api.js"></script>
-  <script src="js/charging.js?v=33"></script>
+  <script src="js/api.js?v=34"></script>
+  <script src="js/charging.js?v=34"></script>
 </body>
 </html>
