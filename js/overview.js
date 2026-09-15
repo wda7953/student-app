@@ -94,16 +94,20 @@ function renderDueSoon() {
   if (!el) return;
   const list = dashData.overview.dueSoon || [];
   if (!list.length) {
-    el.innerHTML = '<div style="padding:6px 0;color:#8e8e93;font-size:14px">目前沒有剩 1 堂的</div>';
+    el.innerHTML = '<div style="padding:6px 0;color:#8e8e93;font-size:14px">目前沒有剩1堂或已扣完的</div>';
     return;
   }
   el.innerHTML = list.map(d => {
     const color = VENUE_COLOR[d.venue] || '#8e8e93';
-    const tagClass = (d.venue === '武士' || d.venue === '柔力') ? d.venue : '';
+    const st = d.status || '剩1堂';
+    // 已扣完標紅（較急）；剩1堂用場地色標
+    const tag = st === '已扣完'
+      ? `<span class="unlink-tag due">${[d.venue, st].filter(Boolean).join(' · ')}</span>`
+      : `<span class="venue-tag ${(d.venue === '武士' || d.venue === '柔力') ? d.venue : ''}">${[d.venue, st].filter(Boolean).join(' · ')}</span>`;
     return `<div class="day-row">
       <div class="day-bar" style="background:${color}"></div>
       <div style="flex-grow:1;font-size:15px;font-weight:600">${d.name}</div>
-      <span class="venue-tag ${tagClass}">${[d.venue, '剩1堂'].filter(Boolean).join(' · ')}</span>
+      ${tag}
     </div>`;
   }).join('');
 }
