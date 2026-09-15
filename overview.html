@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>總覽</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/style.css?v=35">
+  <link rel="stylesheet" href="css/style.css?v=36">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="theme-color" content="#7A5C3E">
@@ -20,13 +20,8 @@
   </div>
 
   <div class="dash">
-    <!-- 三格 KPI -->
-    <div class="kpi-grid">
-      <div class="kpi">
-        <div class="k-label">本週上課</div>
-        <div class="k-num"><span id="kpi-week">–</span><small> 堂</small></div>
-        <div class="k-sub" id="kpi-week-venue">–</div>
-      </div>
+    <!-- 兩格 KPI -->
+    <div class="kpi-grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
       <div class="kpi">
         <div class="k-label">學生總數</div>
         <div class="k-num"><span id="kpi-students">–</span><small> 位</small></div>
@@ -39,17 +34,19 @@
       </div>
     </div>
 
-    <!-- 上課統計 -->
+    <!-- 上課統計（本週/本月，各含武士/柔力） -->
     <div class="dash-card">
       <div class="dc-title" style="margin-bottom:12px">上課統計</div>
       <div style="display:flex;gap:12px">
         <div style="flex-grow:1;background:#FAF7F2;border-radius:12px;padding:12px 14px">
           <div style="font-size:12px;color:#8e8e93">本週已上</div>
           <div style="font-size:22px;font-weight:700;margin-top:2px"><span id="stat-week">–</span> <span style="font-size:13px;color:#8e8e93">堂</span></div>
+          <div style="font-size:12px;color:#6B5C52;margin-top:3px" id="stat-week-venue">–</div>
         </div>
         <div style="flex-grow:1;background:#FAF7F2;border-radius:12px;padding:12px 14px">
           <div style="font-size:12px;color:#8e8e93">本月已上</div>
           <div style="font-size:22px;font-weight:700;margin-top:2px"><span id="stat-month">–</span> <span style="font-size:13px;color:#8e8e93">堂</span></div>
+          <div style="font-size:12px;color:#6B5C52;margin-top:3px" id="stat-month-venue">–</div>
         </div>
       </div>
     </div>
@@ -66,7 +63,7 @@
     </div>
 
     <!-- 收費入口卡 -->
-    <div class="pay-card" style="cursor:pointer" onclick="location.href='charging.html?v=35'">
+    <div class="pay-card" style="cursor:pointer" onclick="location.href='charging.html?v=36'">
       <div style="width:40px;height:40px;border-radius:12px;background:#F2EBE0;display:flex;align-items:center;justify-content:center;flex-shrink:0">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7A5C3E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
       </div>
@@ -79,7 +76,7 @@
   </div>
 
   <nav class="tabbar">
-    <a href="overview.html?v=35" class="active">
+    <a href="overview.html?v=36" class="active">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
       <span>總覽</span>
     </a>
@@ -89,7 +86,7 @@
     </a>
   </nav>
 
-  <script src="js/api.js?v=35"></script>
-  <script src="js/overview.js?v=35"></script>
+  <script src="js/api.js?v=36"></script>
+  <script src="js/overview.js?v=36"></script>
 </body>
 </html>

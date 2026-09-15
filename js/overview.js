@@ -61,22 +61,27 @@ function render() {
   const ov = dashData.overview;
 
   // KPI
-  document.getElementById('kpi-week').textContent = ov.weekCount;
-  const bv = ov.weekByVenue || {};
-  document.getElementById('kpi-week-venue').textContent = `武士${bv['武士'] || 0} · 柔力${bv['柔力'] || 0}`;
   document.getElementById('kpi-students').textContent = ov.studentCount;
   document.getElementById('kpi-remaining').textContent = ov.remainingTotal;
+
+  // 上課統計（本週/本月，各含武士/柔力）
+  const bw = ov.weekByVenue || {}, bm = ov.monthByVenue || {};
   document.getElementById('stat-week').textContent = ov.weekCount;
+  document.getElementById('stat-week-venue').textContent = `武士${bw['武士'] || 0} · 柔力${bw['柔力'] || 0}`;
   document.getElementById('stat-month').textContent = ov.monthCount;
+  document.getElementById('stat-month-venue').textContent = `武士${bm['武士'] || 0} · 柔力${bm['柔力'] || 0}`;
 
   // 週範圍文字（9/7 – 9/13）
   const s = ov.weekRange.start, e = ov.weekRange.end;
   const short = ymd => { const p = ymd.split('-'); return `${Number(p[1])}/${Number(p[2])}`; };
   document.getElementById('week-range').textContent = `${short(s)} – ${short(e)}`;
 
-  // 預設選今天（若今天在本週內），否則選週一
+  // 選今天（若在本週內），否則週一。若原本選的日子不在本週範圍（跨週/舊快取）也重設，
+  // 避免背景更新換週後 selectedDay 停在上週造成「9/7 · 0堂」空清單。
   const today = twToday();
-  if (!selectedDay) selectedDay = (today >= s && today <= e) ? today : s;
+  if (!selectedDay || selectedDay < s || selectedDay > e) {
+    selectedDay = (today >= s && today <= e) ? today : s;
+  }
 
   renderWeekStrip();
   renderDayList();
