@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>總覽</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/style.css?v=36">
+  <link rel="stylesheet" href="css/style.css?v=37">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="theme-color" content="#7A5C3E">
@@ -62,8 +62,14 @@
       <div id="day-list"></div>
     </div>
 
+    <!-- 準備收費（使用中付款包剩 1 堂） -->
+    <div class="dash-card">
+      <div class="dc-title" style="margin-bottom:10px">準備收費 <span style="font-size:12px;color:#8e8e93;font-weight:400">・剩最後 1 堂，該收下一期</span></div>
+      <div id="due-soon"></div>
+    </div>
+
     <!-- 收費入口卡 -->
-    <div class="pay-card" style="cursor:pointer" onclick="location.href='charging.html?v=36'">
+    <div class="pay-card" style="cursor:pointer" onclick="location.href='charging.html?v=37'">
       <div style="width:40px;height:40px;border-radius:12px;background:#F2EBE0;display:flex;align-items:center;justify-content:center;flex-shrink:0">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7A5C3E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
       </div>
@@ -76,7 +82,7 @@
   </div>
 
   <nav class="tabbar">
-    <a href="overview.html?v=36" class="active">
+    <a href="overview.html?v=37" class="active">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
       <span>總覽</span>
     </a>
@@ -86,7 +92,7 @@
     </a>
   </nav>
 
-  <script src="js/api.js?v=36"></script>
-  <script src="js/overview.js?v=36"></script>
+  <script src="js/api.js?v=37"></script>
+  <script src="js/overview.js?v=37"></script>
 </body>
 </html>

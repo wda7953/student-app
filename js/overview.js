@@ -85,6 +85,27 @@ function render() {
 
   renderWeekStrip();
   renderDayList();
+  renderDueSoon();
+}
+
+// 準備收費：使用中付款包剩 1 堂的學生（名字＋場地，不含金額）
+function renderDueSoon() {
+  const el = document.getElementById('due-soon');
+  if (!el) return;
+  const list = dashData.overview.dueSoon || [];
+  if (!list.length) {
+    el.innerHTML = '<div style="padding:6px 0;color:#8e8e93;font-size:14px">目前沒有剩 1 堂的</div>';
+    return;
+  }
+  el.innerHTML = list.map(d => {
+    const color = VENUE_COLOR[d.venue] || '#8e8e93';
+    const tagClass = (d.venue === '武士' || d.venue === '柔力') ? d.venue : '';
+    return `<div class="day-row">
+      <div class="day-bar" style="background:${color}"></div>
+      <div style="flex-grow:1;font-size:15px;font-weight:600">${d.name}</div>
+      <span class="venue-tag ${tagClass}">${[d.venue, '剩1堂'].filter(Boolean).join(' · ')}</span>
+    </div>`;
+  }).join('');
 }
 
 // 某天有課的「代表色點」：有武士→紅，否則有柔力→棕，否則無點

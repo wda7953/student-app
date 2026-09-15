@@ -1,12 +1,11 @@
 // 收費頁：第二層鎖。要輸入收費密碼 → 後端 getCharging 驗證 CHARGING_PASSWORD 才回資料。
 // 收入認列同 email-summary/app_income.py：金額用 total_amount；柔力100%(單次/套餐分列)；武士收款×60%排除黃誼淇。
-// ⚠️ 收費資料不寫 localStorage（避免收入外洩）；收費密碼只暫存 sessionStorage（關掉 App 就要重輸）。
+// ⚠️ 收費資料不寫任何本機儲存（避免收入外洩）；收費密碼也完全不存，一離開收費頁就沒了→每次進頁都要重輸（olan 要求）。
 
-let ch = null;          // charging 資料（只放記憶體）
+let ch = null;          // charging 資料（只放記憶體，離開頁即消失）
 let curRange = '本月';
 
 const VENUE_COLOR = { '武士': '#B85060', '柔力': '#C4A07C' };
-const CP_KEY = 'sa_charge_cp';
 
 function money(n) { return '$' + Number(n || 0).toLocaleString(); }
 function twMonth() { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit' }).format(new Date()).slice(0, 7); }
@@ -24,7 +23,6 @@ async function tryCp(pass) {
   try { data = await API.apiPost('getCharging', { cp: pass }); } catch (_) { return 'fail'; }
   if (data && data.payments) {
     ch = data;
-    try { sessionStorage.setItem(CP_KEY, pass); } catch (_) {}
     return 'ok';
   }
   if (data && data.error === 'charge_unauthorized') return 'wrong';
@@ -46,7 +44,7 @@ function showLock(errMsg) {
       '<input id="cl-pw" type="password" inputmode="numeric" autocomplete="off" placeholder="輸入收費密碼" ' +
         'style="width:100%;max-width:280px;padding:14px;border:1px solid #d6cbbf;border-radius:12px;font-size:16px;outline:none;box-sizing:border-box;text-align:center">' +
       '<button id="cl-btn" style="width:100%;max-width:280px;padding:14px;background:#6B5C52;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer">解鎖</button>' +
-      '<a href="overview.html?v=36" style="color:#8e8e93;font-size:14px;text-decoration:none">‹ 返回總覽</a>';
+      '<a href="overview.html?v=37" style="color:#8e8e93;font-size:14px;text-decoration:none">‹ 返回總覽</a>';
     document.body.appendChild(ov);
   }
   ov.style.display = 'flex';
@@ -70,14 +68,8 @@ function showLock(errMsg) {
   setTimeout(() => pw.focus(), 100);
 }
 
-async function init() {
-  let cp = null;
-  try { cp = sessionStorage.getItem(CP_KEY); } catch (_) {}
-  if (cp) {
-    const r = await tryCp(cp);
-    if (r === 'ok') { render(); return; }
-    if (r === 'wrong') { try { sessionStorage.removeItem(CP_KEY); } catch (_) {} }
-  }
+function init() {
+  // 密碼完全不暫存：每次進收費頁都要重新輸入
   showLock();
 }
 
