@@ -84,7 +84,7 @@ form { padding: 0 20px; }
 .month-arrow { font-size: 10px; }
 
 /* 底部切換列（總覽／學生／收費），三頁共用 */
-.tabbar { position: fixed; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(3, 1fr); background: #fff; border-top: 1px solid #e5e5ea; padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px)); z-index: 50; }
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: #fff; border-top: 1px solid #e5e5ea; padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px)); z-index: 50; }
 .tabbar a { display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; color: #8e8e93; font-size: 11px; font-weight: 600; }
 .tabbar a.active { color: #6B5C52; font-weight: 700; }
 .tabbar svg { width: 22px; height: 22px; }
