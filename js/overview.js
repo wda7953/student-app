@@ -99,9 +99,10 @@ function renderDueSoon() {
   }
   el.innerHTML = list.map(d => {
     const color = VENUE_COLOR[d.venue] || '#8e8e93';
-    const st = d.status || '剩1堂';
-    // 已扣完標紅（較急）；剩1堂用場地色標
-    const tag = st === '已扣完'
+    const rem = Number(d.rem || 0);
+    const st = '剩' + rem + '堂';
+    // 剩0堂標紅（較急）；剩1堂用場地色標
+    const tag = rem <= 0
       ? `<span class="unlink-tag due">${[d.venue, st].filter(Boolean).join(' · ')}</span>`
       : `<span class="venue-tag ${(d.venue === '武士' || d.venue === '柔力') ? d.venue : ''}">${[d.venue, st].filter(Boolean).join(' · ')}</span>`;
     return `<div class="day-row">
