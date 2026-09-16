@@ -3,6 +3,9 @@ const SVG_TRASH = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" s
 
 const studentId = new URLSearchParams(location.search).get('id');
 
+// 每位學員各自保留最近一次完整資料，進頁可先畫快取、再背景更新。
+const bundleCacheKey = `sa_bundle_${studentId}`;
+
 // 將日期轉為本地 YYYY-MM-DD，避免 UTC 時區差 -1 天
 function localDate(val) {
   const d = new Date(val);
@@ -54,6 +57,10 @@ function formatContent(content) {
 
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function getSingleRate() {
+  try { return localStorage.getItem('single_rate_' + studentId) || ''; } catch (_) { return ''; }
 }
 
 // 課程項目的 CSS 類別（依類型加顏色）
@@ -138,7 +145,7 @@ function renderInfoEdit(s) {
     </div>
     <div class="card-row">
       <span class="card-label" style="flex-shrink:0">單次費率</span>
-      <input id="edit-single-rate" value="${localStorage.getItem('single_rate_' + studentId) || ''}" class="edit-input" placeholder="無（填金額啟用）" style="text-align:right">
+      <input id="edit-single-rate" value="${getSingleRate()}" class="edit-input" placeholder="無（填金額啟用）" style="text-align:right">
     </div>
     <div class="card-row">
       <span class="card-label" style="flex-shrink:0">共課夥伴</span>
@@ -170,11 +177,13 @@ async function saveInfo() {
   const saveBtn = document.querySelector('[onclick="saveInfo()"]');
   if (saveBtn) saveBtn.textContent = '儲存中…';
   const singleRateVal = document.getElementById('edit-single-rate')?.value.trim();
-  if (singleRateVal) {
-    localStorage.setItem('single_rate_' + studentId, singleRateVal);
-  } else {
-    localStorage.removeItem('single_rate_' + studentId);
-  }
+  try {
+    if (singleRateVal) {
+      localStorage.setItem('single_rate_' + studentId, singleRateVal);
+    } else {
+      localStorage.removeItem('single_rate_' + studentId);
+    }
+  } catch (_) {}
   const partnerVal = document.getElementById('edit-partner')?.value;
   if (partnerVal !== undefined) {
     await API.apiPost('setPartner', { student_id: studentId, partner_id: partnerVal || '' });
@@ -201,26 +210,13 @@ function sessionLabel(cls, payments) {
   return p;
 }
 
-async function load() {
-  let students, classes, payments, partnerClasses = [], partnerPayments = [];
-  try {
-    // 一趟撈回學員清單＋本人與夥伴的課/付款，取代原本「先 getStudents（一趟）再平行 4 支（一趟）」
-    // 的兩趟往返。冷啟動時後端每趟要 ~10 秒，合成一趟可直接砍半開啟時間。
-    const b = await API.apiGet('getBundle', { studentId });
-    if (!b || !b.students) throw new Error('bundle failed');
-    students = b.students;
-    classes = b.classes;
-    payments = b.payments;
-    partnerClasses = b.partnerClasses || [];
-    partnerPayments = b.partnerPayments || [];
-  } catch (e) {
-    ['info-card', 'classes-card', 'payments-card'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) { el.innerHTML = `<div class="empty">載入失敗，請重新整理</div>`; el.classList.remove('hidden'); }
-    });
-    return;
-  }
-
+// 快取與 API 回傳皆走同一套渲染，確保畫面與計算邏輯完全一致。
+function renderAll(b) {
+  const students = b.students;
+  const classes = b.classes;
+  const payments = b.payments;
+  const partnerClasses = b.partnerClasses || [];
+  const partnerPayments = b.partnerPayments || [];
   try {
   allStudents = students;
   const s = students.find(s => s.id === studentId);
@@ -471,6 +467,37 @@ async function load() {
       if (el) { el.innerHTML = `<div class="empty">錯誤：${e.message}</div>`; el.classList.remove('hidden'); }
     });
   }
+}
+
+// 進頁流程：先用本機快取「秒開」，再背景抓 getBundle 更新並回寫快取。
+// 沿用 overview.js / students.js 已驗證的「快取先畫」策略，解決冷啟動時整頁空白等 1~10 秒的問題。
+async function load() {
+  // 1. 有快取就先畫，畫面秒開（無痕模式讀取會丟例外，用 try/catch 包住）
+  let hadCache = false;
+  try {
+    const cached = JSON.parse(localStorage.getItem(bundleCacheKey) || 'null');
+    if (cached && cached.students) { renderAll(cached); hadCache = true; }
+  } catch (_) {}
+
+  // 2. 背景抓最新資料（getBundle：一趟撈回學員清單＋本人與夥伴的課/付款）
+  let b;
+  try {
+    b = await API.apiGet('getBundle', { studentId });
+    if (!b || !b.students) throw new Error('bundle failed');
+  } catch (e) {
+    // 有快取就靜默保留舊畫面，不用錯誤訊息蓋掉；沒快取才顯示載入失敗
+    if (!hadCache) {
+      ['info-card', 'classes-card', 'payments-card'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.innerHTML = `<div class="empty">載入失敗，請重新整理</div>`; el.classList.remove('hidden'); }
+      });
+    }
+    return;
+  }
+
+  // 3. 用最新資料重畫並回寫快取
+  renderAll(b);
+  try { localStorage.setItem(bundleCacheKey, JSON.stringify(b)); } catch (_) {}
 }
 
 load();
