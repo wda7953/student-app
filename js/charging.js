@@ -1,5 +1,5 @@
 // 收費頁：第二層鎖。要輸入收費密碼 → 後端 getCharging 驗證 CHARGING_PASSWORD 才回資料。
-// 收入認列同 email-summary/app_income.py：金額用 total_amount；柔力100%(單次/套餐分列)；武士收款×60%排除黃誼淇。
+// 收入認列同 email-summary/app_income.py：金額用 total_amount；柔力100%(單次/套餐分列)；武士收款×60%(不排除任何人)。
 // ⚠️ 收費資料不寫任何本機儲存（避免收入外洩）；收費密碼也完全不存，一離開收費頁就沒了→每次進頁都要重輸（olan 要求）。
 
 let ch = null;          // charging 資料（只放記憶體，離開頁即消失）
@@ -44,7 +44,7 @@ function showLock(errMsg) {
       '<input id="cl-pw" type="password" inputmode="numeric" autocomplete="off" placeholder="輸入收費密碼" ' +
         'style="width:100%;max-width:280px;padding:14px;border:1px solid #d6cbbf;border-radius:12px;font-size:16px;outline:none;box-sizing:border-box;text-align:center">' +
       '<button id="cl-btn" style="width:100%;max-width:280px;padding:14px;background:#6B5C52;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer">解鎖</button>' +
-      '<a href="overview.html?v=40" style="color:#8e8e93;font-size:14px;text-decoration:none">‹ 返回總覽</a>';
+      '<a href="overview.html?v=41" style="color:#8e8e93;font-size:14px;text-decoration:none">‹ 返回總覽</a>';
     document.body.appendChild(ov);
   }
   ov.style.display = 'flex';
@@ -91,7 +91,7 @@ function inRange(dateStr) {
 function render() {
   if (!ch) return;
   const rows = (ch.payments || []).filter(p => inRange(p.date));
-  const skip = ch.wushiSkip || ['黃誼淇'];
+  const skip = ch.wushiSkip || [];   // 不排除任何人（黃誼淇是60%抽成，2026-09-16 起不排除）
   const rate = ch.wushiRate || 0.6;
 
   let rSingle = 0, rPackage = 0, wGross = 0;
