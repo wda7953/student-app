@@ -86,6 +86,7 @@ function render() {
   renderWeekStrip();
   renderDayList();
   renderDueSoon();
+  renderDueUnrecorded();
 }
 
 // 準備收費：使用中付款包剩 1 堂的學生（名字＋場地，不含金額）
@@ -99,12 +100,32 @@ function renderDueSoon() {
   }
   el.innerHTML = list.map(d => {
     const color = VENUE_COLOR[d.venue] || '#8e8e93';
-    const rem = Number(d.rem || 0);
-    const st = '剩' + rem + '堂';
-    // 剩0堂標紅（較急）；剩1堂用場地色標
+    const rem = Number(d.rem);
+    const st = rem < 0 ? ('欠' + (-rem) + '堂') : ('剩' + rem + '堂');   // 負數＝超扣，顯示「欠N堂」
+    // 剩0堂或超扣標紅（較急）；剩1堂用場地色標
     const tag = rem <= 0
       ? `<span class="unlink-tag due">${[d.venue, st].filter(Boolean).join(' · ')}</span>`
       : `<span class="venue-tag ${(d.venue === '武士' || d.venue === '柔力') ? d.venue : ''}">${[d.venue, st].filter(Boolean).join(' · ')}</span>`;
+    return `<div class="day-row">
+      <div class="day-bar" style="background:${color}"></div>
+      <div style="flex-grow:1;font-size:15px;font-weight:600">${d.name}</div>
+      ${tag}
+    </div>`;
+  }).join('');
+}
+
+// 未登記付款：有上課但完全沒登記付款的在檔學生（該請款/補登），整區沒人就整塊隱藏
+function renderDueUnrecorded() {
+  const wrap = document.getElementById('due-unrec-wrap');
+  const el = document.getElementById('due-unrecorded');
+  if (!wrap || !el) return;
+  const list = (dashData.overview && dashData.overview.dueUnrecorded) || [];
+  if (!list.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  el.innerHTML = list.map(d => {
+    const color = VENUE_COLOR[d.venue] || '#8e8e93';
+    const st = '上課' + Number(d.count) + '堂';
+    const tag = `<span class="unlink-tag due">${[d.venue, st].filter(Boolean).join(' · ')}</span>`;
     return `<div class="day-row">
       <div class="day-bar" style="background:${color}"></div>
       <div style="flex-grow:1;font-size:15px;font-weight:600">${d.name}</div>
