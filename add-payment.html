@@ -86,12 +86,13 @@
       return `${y}-${m}-${day}`;
     }
 
+    // 只有「新增」才預設今天日期；編輯模式要等 API 抓回存檔值再填，避免閃現今天日期
     const now = new Date();
-    document.getElementById('date').value = localDate(now);
+    if (!editId) document.getElementById('date').value = localDate(now);
 
-    // 優先從 URL 讀預設地點（由學員資料頁帶入），不需等 API
+    // 優先從 URL 讀預設地點（由學員資料頁帶入），不需等 API；編輯模式不套預設，避免閃現武士
     const venueParam = new URLSearchParams(location.search).get('venue');
-    if (venueParam) { document.getElementById('venue').value = venueParam; loadUnlinked(); }
+    if (!editId && venueParam) { document.getElementById('venue').value = venueParam; loadUnlinked(); }
 
     let unlinkedClasses = [];
 
@@ -187,8 +188,16 @@
       document.querySelector('.btn-primary').textContent = '儲存變更';
       document.getElementById('link-section').style.display = 'none';
 
+      // 讀存檔值前先蓋一層「載入中」，避免使用者看到武士／今天等預設值而以為沒帶入
+      const form = document.querySelector('form');
+      form.style.visibility = 'hidden';
+      const loading = document.createElement('div');
+      loading.textContent = '載入中…';
+      loading.style.cssText = 'padding:40px;text-align:center;color:#8e8e93';
+      form.parentNode.insertBefore(loading, form);
+
       const payments = await API.apiGet('getPayments', { studentId });
-      const p = payments.find(p => p.id === editId);
+      const p = Array.isArray(payments) ? payments.find(p => p.id === editId) : null;
       if (!p) { alert('找不到收款記錄'); history.back(); return; }
 
       document.getElementById('venue').value = p.venue || '武士';
@@ -198,6 +207,10 @@
       document.getElementById('total').value = p.total_amount || '';
       document.getElementById('paid').value = p.paid_amount || '';
       document.getElementById('notes').value = p.notes || '';
+
+      // 填好才顯示表單
+      loading.remove();
+      form.style.visibility = 'visible';
     }
   </script>
 </body>
