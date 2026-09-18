@@ -602,6 +602,17 @@
     }
 
     // ── 付款周期查詢（含夥伴 fallback）────────────────
+    // 效能：儲存路徑最慢的來源是 GAS 每次往返（實測冷啟動 20s+／全熱 ~1.2s），
+    // 而 checkActivePayment（進頁面／切場地時）已經算過一模一樣的週期。
+    // 用 promise 快取（key = sid|venue）讓 checkActivePayment 與 submitForm 共用同一次查詢，
+    // 儲存時不再重打 getClasses+getPayments（省 2~3 次往返）。這是「去重」不是「跳過」，
+    // 資料完全一致；場地一改就換 key 自動重查，寫入時後端 paymentIsFull_ 仍守門防灌爆。
+    const _apCache = {};
+    function getActivePaymentCached(sid, venue) {
+      const key = sid + '|' + venue;
+      if (!_apCache[key]) _apCache[key] = getActivePaymentWithPartner(sid, venue);
+      return _apCache[key];
+    }
     async function getActivePaymentWithPartner(sid, venue) {
       // 共用付款：夫妻/一對二夥伴輪流上課會消耗同一批預收款，
       // 判斷付款包是否還有空位時，「已用堂數」必須同時計入本人與夥伴的課，
@@ -640,7 +651,7 @@
       const venue = document.getElementById('venue').value;
       const notice = document.getElementById('session-notice');
       try {
-        const { active, usingPartner } = await getActivePaymentWithPartner(studentId, venue);
+        const { active, usingPartner } = await getActivePaymentCached(studentId, venue);
         if (active?.payment) {
           const p = active.payment;
           const prefix = usingPartner ? '⇄ 使用夥伴付款　' : '';
@@ -727,8 +738,8 @@
         // 一對二：各自查付款週期，各連各的（含夥伴 fallback）
         const selfNotes = payload.notes ? payload.notes + '（一對二）' : '一對二';
         const [selfResult, partnerResult] = await Promise.all([
-          getActivePaymentWithPartner(studentId, venue),
-          getActivePaymentWithPartner(partnerId, venue)
+          getActivePaymentCached(studentId, venue),
+          getActivePaymentCached(partnerId, venue)
         ]);
         const selfPayId = selfResult.active?.payment?.id || '';
         const partnerPayId = partnerResult.active?.payment?.id || '';
@@ -738,7 +749,7 @@
         ]);
       } else {
         // 一對一：查自己的付款，無則抓夥伴的
-        let { active } = await getActivePaymentWithPartner(studentId, venue);
+        let { active } = await getActivePaymentCached(studentId, venue);
         let paymentId = active?.payment?.id || '';
 
         // 若無付款包且勾選單次收費，先建付款再連結

@@ -44,7 +44,7 @@ function showLock(errMsg) {
       '<input id="cl-pw" type="password" inputmode="numeric" autocomplete="off" placeholder="輸入收費密碼" ' +
         'style="width:100%;max-width:280px;padding:14px;border:1px solid #d6cbbf;border-radius:12px;font-size:16px;outline:none;box-sizing:border-box;text-align:center">' +
       '<button id="cl-btn" style="width:100%;max-width:280px;padding:14px;background:#6B5C52;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer">解鎖</button>' +
-      '<a href="overview.html?v=41" style="color:#8e8e93;font-size:14px;text-decoration:none">‹ 返回總覽</a>';
+      '<a href="overview.html?v=42" style="color:#8e8e93;font-size:14px;text-decoration:none">‹ 返回總覽</a>';
     document.body.appendChild(ov);
   }
   ov.style.display = 'flex';
