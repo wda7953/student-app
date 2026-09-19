@@ -396,6 +396,20 @@
     if (venueParam && !editId) document.getElementById('venue').value = venueParam;
     if (!editId) checkActivePayment();
 
+    // ── 後端保溫（解決「開表單邊上課邊記、一小時後才儲存」的冷啟動）──────
+    // olan 慣例：add-class 表單開著整堂課、下課才按儲存。GAS instance 閒置
+    // 幾分鐘就被回收→儲存那一發吃冷啟動（實測 15~22s）。表單開著期間每 2 分鐘
+    // 輕打一發（不經 API 包裝、不觸發登入、不讀回應）讓後端保持熱機，儲存那發
+    // 就是熱的（~3s）。只在表單開著且分頁可見時打，關頁即停、切到背景不打，
+    // 一堂課約 30 發輕請求，配額可忽略。查詢慢已由 getActivePaymentCached 快取解掉。
+    function keepBackendWarm() {
+      if (document.hidden) return;                       // 切到背景不打，省配額
+      try { fetch(API_URL, { method: 'GET' }).catch(() => {}); } catch (_) {}
+    }
+    keepBackendWarm();                                    // 開頁先熱一發
+    setInterval(keepBackendWarm, 120000);                 // 之後每 2 分鐘保溫
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) keepBackendWarm(); });
+
     // ── 類型切換 ──────────────────────────────────────
     function onTypeChange() {
       if (editId) return;
@@ -709,7 +723,6 @@
       btn.disabled = true;
 
       if (editId) {
-        const _t0 = performance.now();
         await API.apiPost('updateClass', {
           id: editId,
           date: document.getElementById('date').value,
@@ -719,7 +732,6 @@
           notes: document.getElementById('notes').value,
           payment_id: document.getElementById('edit-payment-sel')?.value || ''
         });
-        alert('⏱ 診斷｜更新課程: ' + Math.round(performance.now() - _t0) + ' ms');
         history.back();
         return;
       }
@@ -739,27 +751,20 @@
       if (partnerId) {
         // 一對二：各自查付款週期，各連各的（含夥伴 fallback）
         const selfNotes = payload.notes ? payload.notes + '（一對二）' : '一對二';
-        const _tq = performance.now();
         const [selfResult, partnerResult] = await Promise.all([
           getActivePaymentCached(studentId, venue),
           getActivePaymentCached(partnerId, venue)
         ]);
-        const _tq2 = performance.now();
         const selfPayId = selfResult.active?.payment?.id || '';
         const partnerPayId = partnerResult.active?.payment?.id || '';
         await Promise.all([
           API.apiPost('addClass', { ...payload, student_id: studentId, notes: selfNotes, payment_id: selfPayId }),
           API.apiPost('addClass', { ...payload, student_id: partnerId, notes: selfNotes, payment_id: partnerPayId })
         ]);
-        const _tw = performance.now();
-        alert('⏱ 診斷（一對二）\n查週期: ' + Math.round(_tq2 - _tq) + ' ms\n存檔×2: ' + Math.round(_tw - _tq2) + ' ms\n總計: ' + Math.round(_tw - _tq) + ' ms');
       } else {
         // 一對一：查自己的付款，無則抓夥伴的
-        const _tq = performance.now();
         let { active } = await getActivePaymentCached(studentId, venue);
-        const _tq2 = performance.now();
         let paymentId = active?.payment?.id || '';
-        let _tpay = 0;
 
         // 若無付款包且勾選單次收費，先建付款再連結
         if (!paymentId) {
@@ -770,7 +775,6 @@
           // 改成：勾選框未出現時視同「預設打勾」，只有它確實存在且被手動取消勾選才不建。
           const wantSingle = cb ? cb.checked : true;
           if (wantSingle && rate) {
-            const _tp0 = performance.now();
             const pmtResult = await API.apiPost('addPayment', {
               student_id: studentId,
               venue: payload.venue,
@@ -780,15 +784,11 @@
               total_amount: Number(rate),
               paid_amount: Number(rate)
             });
-            _tpay = Math.round(performance.now() - _tp0);
             paymentId = pmtResult.id || '';
           }
         }
 
-        const _ta = performance.now();
         await API.apiPost('addClass', { ...payload, student_id: studentId, payment_id: paymentId });
-        const _tw = performance.now();
-        alert('⏱ 診斷（一對一）\n查週期(快取應近0): ' + Math.round(_tq2 - _tq) + ' ms\n建單次收款: ' + _tpay + ' ms\n存檔addClass: ' + Math.round(_tw - _ta) + ' ms\n總計: ' + Math.round(_tw - _tq) + ' ms');
       }
 
       history.back();
