@@ -384,6 +384,11 @@
     let currentCat = 'Warm up';
     let weightsAdded = []; // [{name, setting}]
     let _currentExercises = []; // 對應 weights-grid 目前的動作陣列
+    // 付款週期查詢的 promise 快取（key = sid|venue）。必須在此宣告：init 的
+    // checkActivePayment() 會馬上用到它，若把 const 留在下方 getActivePaymentCached
+    // 附近（在 init 呼叫之後才宣告），init 那發會踩到 TDZ（Cannot access '_apCache'
+    // before initialization），被 checkActivePayment 的 try/catch 吞掉→付款提示整塊空白。
+    const _apCache = {};
 
     // ── 初始化 ────────────────────────────────────────
     // 只有「新增」才預填今天；編輯模式一開先留空，等 initEditMode 撈到真實資料再填，
@@ -621,7 +626,7 @@
     // 用 promise 快取（key = sid|venue）讓 checkActivePayment 與 submitForm 共用同一次查詢，
     // 儲存時不再重打 getClasses+getPayments（省 2~3 次往返）。這是「去重」不是「跳過」，
     // 資料完全一致；場地一改就換 key 自動重查，寫入時後端 paymentIsFull_ 仍守門防灌爆。
-    const _apCache = {};
+    // 註：_apCache 的宣告已上移到狀態區（init 就會用到，留在這會踩 TDZ）。
     function getActivePaymentCached(sid, venue) {
       const key = sid + '|' + venue;
       if (!_apCache[key]) _apCache[key] = getActivePaymentWithPartner(sid, venue);
