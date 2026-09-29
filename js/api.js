@@ -81,13 +81,17 @@ async function apiGet(action, params = {}) {
     url.searchParams.set('action', action);
     url.searchParams.set('session', _session);
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+    // 防 HTTP 快取：每次網址都帶不同時間戳，避免 iPad/PWA 把同一個 GET
+    // 回應（例如某學員的 getBundle）當成舊資料重複回傳（莊琬琦看不到最新課事件）
+    url.searchParams.set('_ts', Date.now());
     return url.toString();
   };
-  let json = await (await fetch(build())).json();
+  // cache:'no-store' 再保險一層：完全不吃瀏覽器快取
+  let json = await (await fetch(build(), { cache: 'no-store' })).json();
   if (json && json.error === 'unauthorized') {
     _clearSession();
     await ensureAuth('登入已過期，請重新登入');
-    json = await (await fetch(build())).json();
+    json = await (await fetch(build(), { cache: 'no-store' })).json();
   }
   return json;
 }

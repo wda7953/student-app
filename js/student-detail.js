@@ -73,7 +73,7 @@ function classTypeClass(type) {
 
 function goAddClass() {
   const v = currentStudent?.venue || '';
-  location.href = `add-class.html?id=${studentId}${v ? '&venue=' + encodeURIComponent(v) : ''}&v=45`;
+  location.href = `add-class.html?id=${studentId}${v ? '&venue=' + encodeURIComponent(v) : ''}&v=46`;
 }
 function goAddPayment() {
   const v = currentStudent?.venue || '';
@@ -469,6 +469,16 @@ function renderAll(b) {
   }
 }
 
+// 標題列右側同步狀態小字（更新中／更新失敗），沿用首頁 students.js 的做法，
+// 避免「先畫舊快取」在背景更新失敗時看起來像最新資料（莊琬琦看不到最新課事件）。
+function setDetailSync(text, kind) {
+  const el = document.getElementById('detail-sync');
+  if (!el) return;
+  el.textContent = text || '';
+  el.style.color = kind === 'error' ? '#ffd2cc' : 'rgba(255,255,255,0.8)';
+  el.style.display = text ? '' : 'none';
+}
+
 // 進頁流程：先用本機快取「秒開」，再背景抓 getBundle 更新並回寫快取。
 // 沿用 overview.js / students.js 已驗證的「快取先畫」策略，解決冷啟動時整頁空白等 1~10 秒的問題。
 async function load() {
@@ -480,13 +490,17 @@ async function load() {
   } catch (_) {}
 
   // 2. 背景抓最新資料（getBundle：一趟撈回學員清單＋本人與夥伴的課/付款）
+  setDetailSync('更新中…');
   let b;
   try {
     b = await API.apiGet('getBundle', { studentId });
     if (!b || !b.students) throw new Error('bundle failed');
   } catch (e) {
-    // 有快取就靜默保留舊畫面，不用錯誤訊息蓋掉；沒快取才顯示載入失敗
-    if (!hadCache) {
+    // 更新失敗要明講，不能靜默沿用舊快取讓人誤以為是最新（否則新加的課不會出現卻無感）
+    if (hadCache) {
+      setDetailSync('更新失敗，顯示的是上次資料', 'error');
+    } else {
+      setDetailSync('更新失敗', 'error');
       ['info-card', 'classes-card', 'payments-card'].forEach(id => {
         const el = document.getElementById(id);
         if (el) { el.innerHTML = `<div class="empty">載入失敗，請重新整理</div>`; el.classList.remove('hidden'); }
@@ -497,6 +511,7 @@ async function load() {
 
   // 3. 用最新資料重畫並回寫快取
   renderAll(b);
+  setDetailSync('');   // 更新成功，清掉狀態
   try { localStorage.setItem(bundleCacheKey, JSON.stringify(b)); } catch (_) {}
 }
 
@@ -590,7 +605,7 @@ async function deleteClassItem(classId) {
 }
 
 function editClassItem(classId) {
-  location.href = `add-class.html?edit=${classId}&id=${studentId}&v=45`;
+  location.href = `add-class.html?edit=${classId}&id=${studentId}&v=46`;
 }
 
 function editPaymentItem(paymentId) {
