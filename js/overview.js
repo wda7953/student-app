@@ -3,6 +3,7 @@ const DASH_CACHE_KEY = 'sa_dashboard_cache_v2';
 
 let dashData = null;      // 完整 dashboard 回傳
 let selectedDay = null;   // 目前選的日期字串 yyyy-MM-dd
+let showLastMonth = false; // 上課統計那格：false=本月、true=上月（點一下切換）
 
 const DOW = ['一', '二', '三', '四', '五', '六', '日'];  // 週一=0
 const VENUE_COLOR = { '武士': '#B85060', '柔力': '#C4A07C' };
@@ -65,11 +66,10 @@ function render() {
   document.getElementById('kpi-remaining').textContent = ov.remainingTotal;
 
   // 上課統計（本週/本月，各含武士/柔力）
-  const bw = ov.weekByVenue || {}, bm = ov.monthByVenue || {};
+  const bw = ov.weekByVenue || {};
   document.getElementById('stat-week').textContent = ov.weekCount;
   document.getElementById('stat-week-venue').textContent = `武士${bw['武士'] || 0} · 柔力${bw['柔力'] || 0}`;
-  document.getElementById('stat-month').textContent = ov.monthCount;
-  document.getElementById('stat-month-venue').textContent = `武士${bm['武士'] || 0} · 柔力${bm['柔力'] || 0}`;
+  renderMonthBox();
 
   // 週範圍文字（9/7 – 9/13）
   const s = ov.weekRange.start, e = ov.weekRange.end;
@@ -87,6 +87,26 @@ function render() {
   renderDayList();
   renderDueSoon();
   renderDueUnrecorded();
+}
+
+// 上課統計那格：依 showLastMonth 畫「本月」或「上月」。上月資料要後端新版才有，沒有就停留本月。
+function renderMonthBox() {
+  const ov = dashData.overview;
+  const hasLast = typeof ov.lastMonthCount === 'number';
+  if (showLastMonth && !hasLast) showLastMonth = false;   // 舊快取/舊後端沒上月資料，退回本月
+
+  const label = showLastMonth ? '上月已上' : '本月已上';
+  const count = showLastMonth ? ov.lastMonthCount : ov.monthCount;
+  const bv = (showLastMonth ? ov.lastMonthByVenue : ov.monthByVenue) || {};
+
+  document.getElementById('stat-month-label').textContent = label;
+  document.getElementById('stat-month').textContent = count;
+  document.getElementById('stat-month-venue').textContent = `武士${bv['武士'] || 0} · 柔力${bv['柔力'] || 0}`;
+}
+
+function toggleMonth() {
+  showLastMonth = !showLastMonth;
+  if (dashData && dashData.overview) renderMonthBox();
 }
 
 // 準備收費：使用中付款包剩 1 堂的學生（名字＋場地，不含金額）
