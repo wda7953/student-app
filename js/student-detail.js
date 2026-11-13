@@ -73,7 +73,7 @@ function classTypeClass(type) {
 
 function goAddClass() {
   const v = currentStudent?.venue || '';
-  location.href = `add-class.html?id=${studentId}${v ? '&venue=' + encodeURIComponent(v) : ''}&v=49`;
+  location.href = `add-class.html?id=${studentId}${v ? '&venue=' + encodeURIComponent(v) : ''}&v=50`;
 }
 function goAddPayment() {
   const v = currentStudent?.venue || '';
@@ -110,8 +110,8 @@ function getPartnerName() {
 function renderInfoView(s) {
   const ledClass = s.status === 'active' ? 'led-green' : 'led-red';
   const partnerName = getPartnerName();
-  const checkinOn = s.signed_checkin === 'yes';
   const screeningOn = s.signed_screening === 'yes';
+  const contractOn = s.signed_contract === 'yes';
   return `
     <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;flex-wrap:wrap">
       <span class="status-led ${ledClass}"></span>
@@ -123,12 +123,12 @@ function renderInfoView(s) {
     <div style="display:flex;align-items:center;gap:20px;padding:10px 16px;border-top:1px solid #f2f2f7;flex-wrap:wrap">
       <span style="color:#8e8e93;font-size:13px;flex-shrink:0">簽署</span>
       <label class="signoff-check">
-        <input type="checkbox" ${checkinOn ? 'checked' : ''} onchange="toggleSignoff('signed_checkin', this.checked)">
-        <span>上課前簽到</span>
-      </label>
-      <label class="signoff-check">
         <input type="checkbox" ${screeningOn ? 'checked' : ''} onchange="toggleSignoff('signed_screening', this.checked)">
         <span>健康篩檢表</span>
+      </label>
+      <label class="signoff-check">
+        <input type="checkbox" ${contractOn ? 'checked' : ''} onchange="toggleSignoff('signed_contract', this.checked)">
+        <span>合約</span>
       </label>
     </div>
   `;
@@ -647,7 +647,7 @@ async function deleteClassItem(classId) {
 }
 
 function editClassItem(classId) {
-  location.href = `add-class.html?edit=${classId}&id=${studentId}&v=49`;
+  location.href = `add-class.html?edit=${classId}&id=${studentId}&v=50`;
 }
 
 function editPaymentItem(paymentId) {
