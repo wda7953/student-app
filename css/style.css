@@ -119,3 +119,7 @@ body.has-tabbar { padding-bottom: 78px; }
 .venue-tag.武士 { background: #fbe9ec; color: #B85060; }
 .venue-tag.柔力 { background: #f4ecdf; color: #9A7B4F; }
 .pay-card { background: #fff; border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
+
+/* 詳情頁基本資料卡的簽署勾選欄位 */
+.signoff-check { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; color: #1c1c1e; cursor: pointer; user-select: none; }
+.signoff-check input[type=checkbox] { width: 20px; height: 20px; flex-shrink: 0; accent-color: #6B5C52; cursor: pointer; margin: 0; }

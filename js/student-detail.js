@@ -73,7 +73,7 @@ function classTypeClass(type) {
 
 function goAddClass() {
   const v = currentStudent?.venue || '';
-  location.href = `add-class.html?id=${studentId}${v ? '&venue=' + encodeURIComponent(v) : ''}&v=48`;
+  location.href = `add-class.html?id=${studentId}${v ? '&venue=' + encodeURIComponent(v) : ''}&v=49`;
 }
 function goAddPayment() {
   const v = currentStudent?.venue || '';
@@ -110,6 +110,8 @@ function getPartnerName() {
 function renderInfoView(s) {
   const ledClass = s.status === 'active' ? 'led-green' : 'led-red';
   const partnerName = getPartnerName();
+  const checkinOn = s.signed_checkin === 'yes';
+  const screeningOn = s.signed_screening === 'yes';
   return `
     <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;flex-wrap:wrap">
       <span class="status-led ${ledClass}"></span>
@@ -118,7 +120,47 @@ function renderInfoView(s) {
       <span style="color:#8e8e93;font-size:14px">備註：<span style="color:#1c1c1e">${s.notes || '-'}</span></span>
       <button onclick="editInfo()" style="margin-left:auto;background:none;border:none;color:#4A90D9;font-size:14px;cursor:pointer;font-weight:600">編輯</button>
     </div>
+    <div style="display:flex;align-items:center;gap:20px;padding:10px 16px;border-top:1px solid #f2f2f7;flex-wrap:wrap">
+      <span style="color:#8e8e93;font-size:13px;flex-shrink:0">簽署</span>
+      <label class="signoff-check">
+        <input type="checkbox" ${checkinOn ? 'checked' : ''} onchange="toggleSignoff('signed_checkin', this.checked)">
+        <span>上課前簽到</span>
+      </label>
+      <label class="signoff-check">
+        <input type="checkbox" ${screeningOn ? 'checked' : ''} onchange="toggleSignoff('signed_screening', this.checked)">
+        <span>健康篩檢表</span>
+      </label>
+    </div>
   `;
+}
+
+// 勾選簽署狀態：點一下就存（樂觀更新本機快取，再背景寫後端；失敗則回復並提示）
+async function toggleSignoff(field, checked) {
+  const val = checked ? 'yes' : '';
+  const prev = currentStudent[field];
+  currentStudent[field] = val;               // 樂觀更新
+  const meInList = allStudents.find(s => s.id === studentId);
+  if (meInList) meInList[field] = val;
+  setDetailSync('更新中…');
+  try {
+    const r = await API.apiPost('updateStudent', { id: studentId, [field]: val });
+    if (!r || r.error) throw new Error(r && r.error || 'save failed');
+    setDetailSync('');
+    // 寫回快取，讓下次秒開顯示正確勾選
+    try {
+      const cached = JSON.parse(localStorage.getItem(bundleCacheKey) || 'null');
+      if (cached && cached.students) {
+        const cs = cached.students.find(s => s.id === studentId);
+        if (cs) { cs[field] = val; localStorage.setItem(bundleCacheKey, JSON.stringify(cached)); }
+      }
+    } catch (_) {}
+  } catch (e) {
+    // 失敗：回復狀態＋重畫，讓勾勾跳回原樣，不讓人誤以為已存
+    currentStudent[field] = prev;
+    if (meInList) meInList[field] = prev;
+    document.getElementById('info-card').innerHTML = renderInfoView(currentStudent);
+    setDetailSync('簽署狀態存檔失敗，請重試', 'error');
+  }
 }
 
 function renderInfoEdit(s) {
@@ -605,7 +647,7 @@ async function deleteClassItem(classId) {
 }
 
 function editClassItem(classId) {
-  location.href = `add-class.html?edit=${classId}&id=${studentId}&v=48`;
+  location.href = `add-class.html?edit=${classId}&id=${studentId}&v=49`;
 }
 
 function editPaymentItem(paymentId) {
